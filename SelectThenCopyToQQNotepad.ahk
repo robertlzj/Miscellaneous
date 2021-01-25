@@ -26,16 +26,21 @@ $^c::
 #If EnablePaste
 *~LControl up::
 	EnablePaste:=false
-	Send #``
-	if false{
-		Input i,L1 T2,{esc} ;,{enter}{,}{space}
-		if(ErrorLevel~="EndKey")
-			return
-		if(i){
-			lastInput:=i
-			OutputDebug, Update input "%i%"
+	if WinActive("ahk_exe QQNotepad_V2.12.exe"){
+		Send !{Tab}
+		WinWaitNotActive
+	}else{
+		Send #``
+		if false{
+			Input i,L1 T2,{esc} ;,{enter}{,}{space}
+			if(ErrorLevel~="EndKey")
+				return
+			if(i){
+				lastInput:=i
+				OutputDebug, Update input "%i%"
+			}
+			Clipboard.=i?i:lastInput
 		}
-		Clipboard.=i?i:lastInput
 	}
 	method:=2
 	if(method==1)
@@ -44,7 +49,7 @@ $^c::
 		Send ^v
 		Sleep 200
 	}
-	Clipboard:=originalClipboard
+	;Clipboard:=originalClipboard
 	return
 IsHangOut(winTitle:="A"){
 	MouseGetPos,,,OutputVarWin
