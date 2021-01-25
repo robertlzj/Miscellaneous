@@ -1,6 +1,13 @@
 #SingleInstance Force
 /* Use mouse to select, release mouse button with LControl pressed will copy and paste selection to QQNotepad.
 */
+while(true){
+	currentActiveWindow:=WinExist("A") 
+	WinWaitNotActive,A
+	lastActiveWindow:=currentActiveWindow
+	OutputDebug, lastActiveWindow is: %lastActiveWindow%.
+}
+return
 ~*LButton::
 	OutputDebug, ~*LButton
 	p:=A_TickCount
@@ -26,21 +33,26 @@ $^c::
 #If EnablePaste
 *~LControl up::
 	EnablePaste:=false
-	if WinActive("ahk_exe QQNotepad_V2.12.exe"){
-		Send !{Tab}
-		WinWaitNotActive
+	if(lastActiveWindow and lastActiveWindow!=currentActiveWindow and WinExist("ahk_id " lastActiveWindow)){
+		WinActivate, ahk_id %lastActiveWindow%
+		_:=currentActiveWindow
+		currentActiveWindow:=lastActiveWindow
+		lastActiveWindow:=_
+		OutputDebug, lastActiveWindow is: %lastActiveWindow%.
 	}else{
+		lastActiveWindow:=WinExist("A")
 		Send #``
-		if false{
-			Input i,L1 T2,{esc} ;,{enter}{,}{space}
-			if(ErrorLevel~="EndKey")
-				return
-			if(i){
-				lastInput:=i
-				OutputDebug, Update input "%i%"
-			}
-			Clipboard.=i?i:lastInput
+		currentActiveWindow:=WinExist("A")
+	}
+	if false{
+		Input i,L1 T2,{esc} ;,{enter}{,}{space}
+		if(ErrorLevel~="EndKey")
+			return
+		if(i){
+			lastInput:=i
+			OutputDebug, Update input "%i%"
 		}
+		Clipboard.=i?i:lastInput
 	}
 	method:=2
 	if(method==1)
@@ -49,7 +61,7 @@ $^c::
 		Send ^v
 		Sleep 200
 	}
-	;Clipboard:=originalClipboard
+	Clipboard:=originalClipboard
 	return
 IsHangOut(winTitle:="A"){
 	MouseGetPos,,,OutputVarWin
