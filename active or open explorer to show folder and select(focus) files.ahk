@@ -3,7 +3,7 @@
 
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 #SingleInstance, force
-    SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 ; Explorer.exe /select,"C:\1\1.txt","C:\1\2.txt"
 
@@ -16,7 +16,10 @@ COM_CoUninitialize()
 COM_CoInitialize()
 
 DllCall("shell32\SHParseDisplayName", "Wstr", folderPath, "Uint", 0, "Ptr*", pidl, "Uint", 0, "Uint", 0)
-DllCall("shell32\SHBindToObject","Ptr",0,"Ptr",pidl,"Ptr",0,"Ptr",GUID4String(IID_IShellFolder,"{000214E6-0000-0000-C000-000000000046}"),"Ptr*",pIShellFolder)
+DllCall("shell32\SHBindToObject","Ptr",0,"Ptr",pidl,"Ptr",0,"Ptr"
+    ,GUID4String(IID_IShellFolder,"{000214E6-0000-0000-C000-000000000046}")
+    ,"Ptr*",pIShellFolder)
+
 length:=files.Length()
 VarSetCapacity(apidl, length * A_PtrSize, 0)
 for k, v in files {
