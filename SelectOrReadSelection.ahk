@@ -23,7 +23,8 @@ SelectOrReadSelection(params*){
 	length:=opens.Length()
 	if(length=1)
 		OpenAndSelect(opens[1],"")
-	else if(length>=2)
+		;	如果不传入空，则会打开上级，选中文件夹
+	else if(length>=1)
 		OpenAndSelect(opens*)
 	else if(length!=0)
 		throw "args error."
