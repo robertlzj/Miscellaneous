@@ -1,5 +1,6 @@
 #SingleInstance,Force
-TrayTip, %A_ScriptName%, Launch
+Menu, Tray, Icon, SG.ico
+TrayTip, %A_ScriptName%, Launch,,16
 #Include SelectOrReadSelection.ahk
 Hotkey, If, Condition()
 loop 10{
@@ -30,7 +31,7 @@ MakeGroup:
 	ret:=SelectOrReadSelection()
 	index:=SubStr(A_ThisHotKey,2)
 	Groups[index]:=StrSplit(ret,"`n")
-	TrayTip, %A_ScriptName%, Update group %index%
+	TrayTip, %A_ScriptName%, Update group %index%,,16
 	return
 GetGroup:
 	index:=A_ThisHotKey
@@ -43,16 +44,17 @@ GetGroup:
 	} 
 */
 SaveGroup(){
+	TrayTip, %A_ScriptName%, Exit And Save,,16
 	file:=FileOpen(A_ScriptName . ".data","rw")
 	data:=""
 	for index,subGroup in Groups{ 
 		subData:=""
 		for _,item in subGroup
-			subData.=(subData?",":"") . """" .  item . """"
+			subData.=(subData?"`n,":"") . """" .  item . """"
 		if subData
-			data.=(data?",":"") . "[" . subData . "]"
+			data.=(data?"`n,":"") . "[" . subData . "]"
 	}
 	data:="Groups:=[" . data . "]"
 	file.Write(data)
-	TrayTip, %A_ScriptName%, Exit And Save
+	file.Close()
 }
