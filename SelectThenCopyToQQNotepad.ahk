@@ -1,6 +1,7 @@
 #SingleInstance Force
 /* Use mouse to select, release mouse button with LControl pressed will copy and paste selection to QQNotepad.
 */
+Menu, Tray, Icon, SC.ico
 while(true){
 	currentActiveWindow:=WinExist("A") 
 	WinWaitNotActive,A
@@ -25,13 +26,14 @@ $^c::
 	originalClipboard:=ClipboardAll
 	Clipboard=
 	Send, ^c
-	ClipWait, 0.5
+	ClipWait, 1
 	if(ErrorLevel==1)
 		return
 	EnablePaste:=true
 	return
 #If EnablePaste
 *~LControl up::
+	OutputDebug, LControl up (EnablePaste==true)
 	EnablePaste:=false
 	if(lastActiveWindow and lastActiveWindow!=currentActiveWindow and WinExist("ahk_id " lastActiveWindow)){
 		WinActivate, ahk_id %lastActiveWindow%
