@@ -14,11 +14,26 @@ if not Groups
 	Groups:=[]
 OnExit("SaveGroup")
 return
+#If WinActive("ahk_exe explorer.exe") and not A_CaretX
+^`::
+	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<1000)
+		ExitApp
+	condition:=!condition
+	if condition{
+		Menu, Tray, Icon, SG(R).ico
+		SoundPlay,*64	;info
+		TrayTip, %A_ScriptName%, Start,,16
+	}else{
+		Menu, Tray, Icon, SG.ico
+		TrayTip, %A_ScriptName%, Stop,,16
+		SoundPlay,*48	;Exclamation
+	}
+	return
 #If, Condition()
-^`::ExitApp
 #If
 Condition(){
-	if WinActive("ahk_exe explorer.exe") and not A_CaretX {
+	global condition
+	if condition and WinActive("ahk_exe explorer.exe") and not A_CaretX {
 		ControlGetFocus, OutputVar, A
 		;~ ToolTip % OutputVar1
 		if(OutputVar!="Windows.UI.Core.CoreWindow1")
@@ -32,6 +47,7 @@ MakeGroup:
 	index:=SubStr(A_ThisHotKey,2)
 	Groups[index]:=StrSplit(ret,"`n")
 	TrayTip, %A_ScriptName%, Update group %index%,,16
+	SoundPlay,*-1
 	return
 GetGroup:
 	index:=A_ThisHotKey
@@ -45,6 +61,7 @@ GetGroup:
 */
 SaveGroup(){
 	TrayTip, %A_ScriptName%, Exit And Save,,16
+	SoundPlay,*48	;Exclamation
 	file:=FileOpen(A_ScriptName . ".data","rw")
 	data:=""
 	for index,subGroup in Groups{ 
@@ -57,4 +74,5 @@ SaveGroup(){
 	data:="Groups:=[" . data . "]"
 	file.Write(data)
 	file.Close()
+	Sleep 4000
 }
