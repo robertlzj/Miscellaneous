@@ -3,26 +3,68 @@
 ;~ a:={1:"A","1":"B"}
 ;~ return
 #Include *i NameTag.data
+InputBoxHeight:=130
 if not dataArrary
 	dataArrary:={}
+if not previousExitTime
+	previousExitTime:=A_TickCount
+TrayTip,Name Tag, Launch,,16
+Menu, Tray, Icon, Rn(B).ico
+SoundPlay,*64	;info
 shortcutKeyArray:=["1","2","3","4","5","q","w","e","r","a","s","d","f"]
-Hotkey,IfWinActive,ahk_exe explorer.exe
+Hotkey,If,condition()
 for i,key in shortcutKeyArray{
 	Hotkey,% key,handle
 	Hotkey,% "^" key,setData
 }
-Hotkey,IfWinActive
+Hotkey,If
 OnExit("Save")
 return
-`::ExitApp
+condition(){
+	global condition
+	return condition and WinActive("ahk_exe explorer.exe")
+}
+#If WinActive("ahk_exe explorer.exe")
+~F2::
+	if dataFromClipboard()
+		return
+	condition:=!condition
+	if condition{
+		TrayTip,Name Tag, Start,,16
+		Menu, Tray, Icon, Rn(R).ico
+		SoundPlay,*64	;info
+	}else{
+		TrayTip,Name Tag, Stop,,16
+		Menu, Tray, Icon, Rn(B).ico
+		SoundPlay,*48	;Exclamation
+	}
+	return
+#IfWinActive,ahk_exe SciTE.exe
+^`::
+#If condition()
+^`::
+	if A_TickCount-previousExitTime<2500{
+		TrayTip,Name Tag, Exit,,16
+		SoundPlay,*48	;Exclamation
+		Sleep 500
+		ExitApp
+	}else
+		Reload
+`::
+	key:="``"
+	gosub writeData
+	if ErrorLevel	;cancel
+		return
+	goto handle
+#IfWinActive
 setData:
 	key:=SubStr(A_ThisHotkey,2)
 writeData:
-	InputBox,outputVar,NameTag,Input name tag,,,150,,,,,% dataArrary[key]
+	InputBox,outputVar,NameTag,Input name tag,,,InputBoxHeight,,,,,% dataArrary[key ""]
 	if ErrorLevel	;cancel
 		return
 	data:=outputVar
-	dataArrary[key]:=data
+	dataArrary[key ""]:=data
 	return
 handle:
 	key:=A_ThisHotkey
@@ -34,32 +76,80 @@ handle:
 		if not data or ErrorLevel	;cancel
 			return
 	}
+	dataArrary["``"]:=data
+	if(previousData!=data){
+		previousData:=data
+		active:=key="``"?true:false
+		;	first time/new start
+	}
 	filePath:=dataFromClipboard()
+	if(previousFilePath!=filePath){
+		previousFilePath:=filePath
+		active:=key="``"?true:false
+		;	first time/new start
+		WriteLog("for " data)
+	}
 	if not filePath
 		return
-	fileAttribute:=FileExist(filePath)
-	if(not fileAttribute or fileAttribute~="D")	;Directory
-		return
-	Loop, Files,% filePath
+	/* 
+		fileAttribute:=FileExist(filePath)
+		if(not fileAttribute or fileAttribute~="D")	;Directory
+			return
+	 */
+	dataPattern:="[.¡¤ ]" . data . "\b"
+	updateFileCount:=0
+	activateFileCount:=0
+	Loop, Parse, filePath, `n,`r
 	{
-		;A_LoopFileName: å« A_LoopFileExt
-		log:="for " data
-		if A_LoopFileName~=data{
-			newFileName:=RegExReplace(A_LoopFileName,"[.Â· ]" . data,"")
-		}else{
-			newFileName:=SubStr( A_LoopFileName,1,-StrLen(A_LoopFileExt)-1) . "." . data . "." . A_LoopFileExt
+		Loop, Files,% A_LoopField
+		{
+			;A_LoopFileName: A_LoopFileExt
+			if not FileExist(A_LoopFileLongPath)
+				continue
+			if A_LoopFileName~=dataPattern{
+				if active
+					newFileName:=RegExReplace(A_LoopFileName,dataPattern,"")
+				else{
+					newFileName:=""
+					activateFileCount++
+				}
+				mode:="remove"
+			}else{
+				newFileName:=SubStr( A_LoopFileName,1,-StrLen(A_LoopFileExt)-1) . "¡¤" . data . "." . A_LoopFileExt
+				mode:="add"
+			}
+			if newFileName{
+				folderPath:=A_LoopFileDir . "\"
+				;{update previousFilePath
+					oldFileName:=SubStr(A_LoopFileLongPath,StrLen(folderPath)+1)
+					previousFilePath:=StrReplace(previousFilePath,oldFileName,newFileName,OutputVarCount)
+					if OutputVarCount!=1
+						throw, "update previousFilePath failed!"
+				;}
+				FileMove,% A_LoopFileLongPath,% folderPath . newFileName
+				updateFileCount++
+				if(ErrorLevel!=0){
+					MsgBox,,Name Tag Error, % "failed. " A_LastError
+					WriteLog(A_LoopFileLongPath " failed. " . A_LastError)
+				}else
+					WriteLog(A_LoopFileLongPath . "`t>`t" . newFileName)
+			}
 		}
-		FileMove,% A_LoopFileLongPath,% A_LoopFileDir . "\" . newFileName
-		WriteLog(A_LoopFileLongPath . "`t>`t" . newFileName)
 	}
+	text:="Renamed " (updateFileCount?("(" mode ")")?"") " " updateFileCount " file(s)"
+	if activateFileCount
+		text.="`n Activate " activateFileCount "file(s)"
+	TrayTip,Name Tag, % text,,16
+	active:=true
+	SoundPlay % (activateFileCount or mode="add")?"*-1":"*16"
 	return
 	
 dataFromClipboard(){
 	originalClipboard:=ClipboardAll
 	Clipboard=
-	ClipWait,0.1
+	ClipWait,0.5
 	Send ^c
-	ClipWait,0.1
+	ClipWait,0.5
 	clipboard := clipboard	; Convert any copied files, HTML, or other formatted text to plain text.
 	text:=Clipboard
 	Clipboard:=originalClipboard
@@ -73,9 +163,10 @@ Save(){
 	global dataArrary
 	save:=""
 	for key,data in dataArrary
-		save.=(save?",":"") . """" key """:""" data """`n"
+		save.=(save?",":"") . """" (key="``"?"````":key) """:""" data """`n"
 	save:=Trim(save,"`n")
 	save:="dataArrary:={" save "}"
+	save.="`npreviousExitTime:=" . A_TickCount
 	fileObject:=FileOpen("NameTag.data","w")
 	fileObject.Write(save)
 	fileObject.Close()
