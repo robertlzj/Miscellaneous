@@ -6,8 +6,10 @@
 InputBoxHeight:=130
 if not dataArrary
 	dataArrary:={}
-if not previousExitTime
-	previousExitTime:=A_TickCount
+/* abandon
+	if not previousExitTime
+		previousExitTime:=A_TickCount
+ */
 TrayTip,Name Tag, Launch,,16
 Menu, Tray, Icon, Rn(B).ico
 SoundPlay,*64	;info
@@ -26,6 +28,12 @@ condition(){
 }
 #If WinActive("ahk_exe explorer.exe")
 ~F2::
+	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<3000){
+		TrayTip,Name Tag, Exit,,16
+		SoundPlay,*48	;Exclamation
+		Sleep 500
+		ExitApp
+	}
 	if dataFromClipboard()
 		return
 	condition:=!condition
@@ -42,14 +50,16 @@ condition(){
 #IfWinActive,ahk_exe SciTE.exe
 ^`::
 #If condition()
-^`::
-	if A_TickCount-previousExitTime<2500{
-		TrayTip,Name Tag, Exit,,16
-		SoundPlay,*48	;Exclamation
-		Sleep 500
-		ExitApp
-	}else
-		Reload
+/* 
+	^`::
+		if A_TickCount-previousExitTime<2500{
+			TrayTip,Name Tag, Exit,,16
+			SoundPlay,*48	;Exclamation
+			Sleep 500
+			ExitApp
+		}else
+			Reload
+ */
 `::
 	key:="``"
 	gosub writeData
@@ -166,7 +176,8 @@ Save(){
 		save.=(save?",":"") . """" (key="``"?"````":key) """:""" data """`n"
 	save:=Trim(save,"`n")
 	save:="dataArrary:={" save "}"
-	save.="`npreviousExitTime:=" . A_TickCount
+	;save.="`npreviousExitTime:=" . A_TickCount
+	;	abandon
 	fileObject:=FileOpen("NameTag.data","w")
 	fileObject.Write(save)
 	fileObject.Close()
