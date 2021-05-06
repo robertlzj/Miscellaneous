@@ -106,7 +106,7 @@ handle:
 		if(not fileAttribute or fileAttribute~="D")	;Directory
 			return
 	 */
-	dataPattern:="[.¡¤ ]" . data . "\b"
+	dataPattern:="[.Â· ]" . data . "\b"
 	updateFileCount:=0
 	activateFileCount:=0
 	Loop, Parse, filePath, `n,`r
@@ -125,7 +125,7 @@ handle:
 				}
 				mode:="remove"
 			}else{
-				newFileName:=SubStr( A_LoopFileName,1,-StrLen(A_LoopFileExt)-1) . "¡¤" . data . "." . A_LoopFileExt
+				newFileName:=SubStr( A_LoopFileName,1,-StrLen(A_LoopFileExt)-1) . "Â·" . data . "." . A_LoopFileExt
 				mode:="add"
 			}
 			if newFileName{
