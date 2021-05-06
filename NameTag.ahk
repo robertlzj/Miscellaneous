@@ -4,6 +4,7 @@
 ;~ return
 #Include *i NameTag.data
 InputBoxHeight:=130
+separator:="¡¤"
 if not dataArrary
 	dataArrary:={}
 /* abandon
@@ -12,7 +13,8 @@ if not dataArrary
  */
 TrayTip,Name Tag, Launch,,16
 Menu, Tray, Icon, Rn(B).ico
-SoundPlay,*64	;info
+;~ SoundPlay,*64	;info
+SoundPlay,*16	;failed
 shortcutKeyArray:=["1","2","3","4","5","q","w","e","r","a","s","d","f"]
 Hotkey,If,condition()
 for i,key in shortcutKeyArray{
@@ -28,7 +30,7 @@ condition(){
 }
 #If WinActive("ahk_exe explorer.exe")
 ~F2::
-	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<3000){
+	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<800){
 		TrayTip,Name Tag, Exit,,16
 		SoundPlay,*48	;Exclamation
 		Sleep 500
@@ -40,11 +42,13 @@ condition(){
 	if condition{
 		TrayTip,Name Tag, Start,,16
 		Menu, Tray, Icon, Rn(R).ico
-		SoundPlay,*64	;info
+		;~ SoundPlay,*64	;info
+		SoundPlay,*-1	;success
 	}else{
 		TrayTip,Name Tag, Stop,,16
 		Menu, Tray, Icon, Rn(B).ico
-		SoundPlay,*48	;Exclamation
+		;~ SoundPlay,*48	;Exclamation
+		SoundPlay,*16	;remove
 	}
 	return
 #IfWinActive,ahk_exe SciTE.exe
@@ -70,7 +74,7 @@ condition(){
 setData:
 	key:=SubStr(A_ThisHotkey,2)
 writeData:
-	InputBox,outputVar,NameTag,Input name tag,,,InputBoxHeight,,,,,% dataArrary[key ""]
+	InputBox,outputVar,NameTag,Input name tag for shortkey "%key%",,,InputBoxHeight,,,,,% dataArrary[key ""]
 	if ErrorLevel	;cancel
 		return
 	data:=outputVar
@@ -106,7 +110,7 @@ handle:
 		if(not fileAttribute or fileAttribute~="D")	;Directory
 			return
 	 */
-	dataPattern:="[.Â· ]" . data . "\b"
+	dataPattern:="[." separator " ]" . data . "\b"
 	updateFileCount:=0
 	activateFileCount:=0
 	Loop, Parse, filePath, `n,`r
@@ -125,7 +129,7 @@ handle:
 				}
 				mode:="remove"
 			}else{
-				newFileName:=SubStr( A_LoopFileName,1,-StrLen(A_LoopFileExt)-1) . "Â·" . data . "." . A_LoopFileExt
+				newFileName:=SubStr( A_LoopFileName,1,-StrLen(A_LoopFileExt)-1) . separator . data . "." . A_LoopFileExt
 				mode:="add"
 			}
 			if newFileName{
@@ -155,6 +159,7 @@ handle:
 	return
 	
 dataFromClipboard(){
+	;cant get path on external device like phone
 	originalClipboard:=ClipboardAll
 	Clipboard=
 	ClipWait,0.5
