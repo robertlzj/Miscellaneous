@@ -6,6 +6,7 @@ Hotkey, If, Condition()
 loop 10{
 	index:=A_Index-1
 	Hotkey,^%index%,MakeGroup
+	Hotkey,+^%index%,AddGroup
 	Hotkey,%index%,GetGroup
 }
 #Include *i %A_ScriptName%.data
@@ -17,16 +18,23 @@ return
 #If WinActive("ahk_exe explorer.exe") and not A_CaretX
 ^`::
 	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<1000)
-		ExitApp
-	condition:=!condition
+		if condition	;triple
+			ExitApp
+		else	;double
+			condition:=true
+	else
+		condition:=false
+	;~ condition:=!condition
 	if condition{
 		Menu, Tray, Icon, SG(R).ico
-		SoundPlay,*64	;info
+		;~ SoundPlay,*64	;info
+		SoundPlay,*-1	;success
 		TrayTip, %A_ScriptName%, Start,,16
 	}else{
 		Menu, Tray, Icon, SG.ico
 		TrayTip, %A_ScriptName%, Stop,,16
-		SoundPlay,*48	;Exclamation
+		;~ SoundPlay,*48	;Exclamation
+		SoundPlay,*16	;failed
 	}
 	return
 #If, Condition()
@@ -45,8 +53,33 @@ Condition(){
 MakeGroup:
 	ret:=SelectOrReadSelection()
 	index:=SubStr(A_ThisHotKey,2)
-	Groups[index]:=StrSplit(ret,"`n")
-	TrayTip, %A_ScriptName%, Update group %index%,,16
+	group:=StrSplit(ret,"`n")
+	Groups[index]:=group
+	count:=group.Length()
+MakeGroup_Done:
+	TrayTip, %A_ScriptName%, Set group %index% with %count% file(s),,16
+	SoundPlay,*-1
+	return
+AddGroup:
+	ret:=SelectOrReadSelection()
+	index:=SubStr(A_ThisHotKey,3)
+	arrayToAdd:=StrSplit(ret,"`n")
+	group:=Groups[index]
+	if(not group){
+		Groups[index]:=arrayToAdd
+		goto MakeGroup_Done
+	}else{
+		count:=0
+		for i,item_toAdd in arrayToAdd
+		{
+			for i,item_exist in group
+				if(item_exist=item_toAdd)
+					continue,2
+			group.Push(item_toAdd)
+			count++
+		}
+	}
+	TrayTip, %A_ScriptName%, Update group %index% with %count% file(s),,16
 	SoundPlay,*-1
 	return
 GetGroup:
