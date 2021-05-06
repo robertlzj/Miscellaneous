@@ -1,3 +1,4 @@
+;对MTP，批量选中后无法命名..
 #NoEnv
 #SingleInstance,Force
 ;~ a:={1:"A","1":"B"}
