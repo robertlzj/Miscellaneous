@@ -30,7 +30,11 @@ SelectOrReadSelection(params*){
 		throw "args error."
 	else{
 		path := Explorer_GetPath()
+		if(path="ERROR")
+			return
 		sel := Explorer_GetSelected()
+		if(path="ERROR")
+			return
 		ret := path . (sel?"`n" . sel:"") 
 		return ret
 	}
