@@ -27,9 +27,9 @@ OnExit("Save")
 return
 condition(){
 	global condition
-	return condition and WinActive("ahk_exe explorer.exe")
+	return condition and not A_CaretX and ((WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770")))
 }
-#If WinActive("ahk_exe explorer.exe")
+#If WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770")
 ~F2::
 	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<800){
 		TrayTip,Name Tag, Exit,,16
@@ -53,7 +53,7 @@ condition(){
 	}
 	return
 #IfWinActive,ahk_exe SciTE.exe
-^`::
+F2::ExitApp
 #If condition()
 /* 
 	^`::
@@ -130,15 +130,19 @@ handle:
 				}
 				mode:="remove"
 			}else{
-				newFileName:=SubStr( A_LoopFileName,1,-StrLen(A_LoopFileExt)-1) . separator . data . "." . A_LoopFileExt
 				mode:="add"
+				postfix:=A_LoopFileExt?("." . A_LoopFileExt):""
+				newFileName:=(postfix?SubStr( A_LoopFileName,1,-StrLen(postfix)):A_LoopFileName) . separator . data . postfix
 			}
 			if newFileName{
 				folderPath:=A_LoopFileDir . "\"
 				;{update previousFilePath
 					oldFileName:=SubStr(A_LoopFileLongPath,StrLen(folderPath)+1)
-					previousFilePath:=StrReplace(previousFilePath,oldFileName,newFileName,OutputVarCount)
-					if OutputVarCount!=1
+					;	previousFilePath:=StrReplace(previousFilePath,oldFileName,newFileName,OutputVarCount)
+					;	limitations: can't handle / distinguish between 'b' and 'a.b.c'
+					previousFilePath:=RegExReplace(previousFilePath,"m)(?=[/\\])\Q" . oldFileName . "\E$",newFileName,OutputVarCount)
+					;	Escaping can be avoided by using \Q...\E.
+					i( not OutputVarCount=1)
 						throw, "update previousFilePath failed!"
 				;}
 				FileMove,% A_LoopFileLongPath,% folderPath . newFileName
