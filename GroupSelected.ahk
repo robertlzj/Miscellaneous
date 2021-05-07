@@ -15,7 +15,7 @@ if not Groups
 	Groups:=[]
 OnExit("SaveGroup")
 return
-#If WinActive("ahk_exe explorer.exe") and not A_CaretX
+#If not A_CaretX and (WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770"))
 ^`::
 	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<1000)
 		if condition	;triple
@@ -41,7 +41,7 @@ return
 #If
 Condition(){
 	global condition
-	if condition and WinActive("ahk_exe explorer.exe") and not A_CaretX {
+	if condition and not A_CaretX and (WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770")){
 		ControlGetFocus, OutputVar, A
 		;~ ToolTip % OutputVar1
 		if(OutputVar!="Windows.UI.Core.CoreWindow1")
@@ -52,6 +52,11 @@ Condition(){
 }
 MakeGroup:
 	ret:=SelectOrReadSelection()
+	if not ret{
+		TrayTip, %A_ScriptName%, Failed,,16
+		SoundPlay,*16
+		return
+	}
 	index:=SubStr(A_ThisHotKey,2)
 	group:=StrSplit(ret,"`n")
 	Groups[index]:=group
