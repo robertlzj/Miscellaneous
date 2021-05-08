@@ -138,9 +138,12 @@ handle:
 				folderPath:=A_LoopFileDir . "\"
 				;{update previousFilePath
 					oldFileName:=SubStr(A_LoopFileLongPath,StrLen(folderPath)+1)
-					;	previousFilePath:=StrReplace(previousFilePath,oldFileName,newFileName,OutputVarCount)
+					;	;previousFilePath:=StrReplace(previousFilePath,oldFileName,newFileName,OutputVarCount)
 					;	limitations: can't handle / distinguish between 'b' and 'a.b.c'
-					previousFilePath:=RegExReplace(previousFilePath,"m)(?=[/\\])\Q" . oldFileName . "\E$",newFileName,OutputVarCount)
+					previousFilePath:=RegExReplace(previousFilePath,"m`n)(?<=[/\\])\Q" . oldFileName . "\E$",newFileName,OutputVarCount)
+					;	default newline character (`r`n)
+					;	`n: Switches from the default newline character to a solitary linefeed (`n).
+					;		also see: `r, `a
 					;	Escaping can be avoided by using \Q...\E.
 					i( not OutputVarCount=1)
 						throw, "update previousFilePath failed!"
