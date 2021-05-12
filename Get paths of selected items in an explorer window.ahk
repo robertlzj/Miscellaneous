@@ -1,4 +1,5 @@
 #SingleInstance,Force
+#NoEnv
 global pathOfSelected:="File" ;or "FolderAndFile"
 global baseLength
 If (A_ScriptFullPath=A_LineFile){
