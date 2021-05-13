@@ -145,7 +145,7 @@ handle:
 					;	`n: Switches from the default newline character to a solitary linefeed (`n).
 					;		also see: `r, `a
 					;	Escaping can be avoided by using \Q...\E.
-					i( not OutputVarCount=1)
+					if( not OutputVarCount=1)
 						throw, "update previousFilePath failed!"
 				;}
 				FileMove,% A_LoopFileLongPath,% folderPath . newFileName
