@@ -13,7 +13,8 @@ Exit_GetPathsOfSelectedItemsInAnExplorerWindow:
 	ExitApp
 F1_GetPathsOfSelectedItemsInAnExplorerWindow:
 	ControlGet, selectedFiles, List, selected, SysListView321, A
-	MsgBox, % selectedFiles
+	FileAppend, % selectedFiles, *
+	;~ MsgBox, % selectedFiles
 	return
 
 ;Get paths of selected items in an explorer window - Scripts and Functions - AutoHotkey Community
@@ -22,9 +23,19 @@ F2_GetPathsOfSelectedItemsInAnExplorerWindow:
 	path := Explorer_GetPath()
 	all := Explorer_GetAll()
 	sel := Explorer_GetSelected()
-	MsgBox % path
-	MsgBox % all
-	MsgBox % sel
+	FileAppend, % "Path:`n" path "`nAll:`n" all "`nSel:`n" sel "`n", *
+	;1: normal (folder/file) path
+	;	Path (Folder): C:\Folder
+	;	All/Sel (File): File.txt
+	;2: Recycle Bin / this computer
+	;	Path (Folder): 
+	;	All/Sel (File):
+	;		this computer:
+	;			C:\Users\XXX
+	;			::{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}\::{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
+	;			C:\	;Volumn
+	;		Recycle Bin:
+	;			C:\$Recycle.Bin\S-1-5-21-XXXXXXXXX-XXXXXXXXXX-XXXXXXXXXX-XXXX\$RXXXXXX.txt	;not real name
 	return
 }
 /*
@@ -58,17 +69,21 @@ Explorer_GetPath(hwnd="")
 	if (window="desktop")
 		return A_Desktop . "\"
 	path := window.LocationURL
-	path := RegExReplace(path, "ftp://.*@","ftp://")
-	StringReplace, path, path, file:///
-	StringReplace, path, path, /, \, All 
-	
-	; thanks to polyethene
-	Loop
-		If RegExMatch(path, "i)(?<=%)[\da-f]{1,2}", hex)
-			StringReplace, path, path, `%%hex%, % Chr("0x" . hex), All
-		Else Break
-	path.="\"
-	baseLength:=StrLen(path)+1
+	;	maybe empty (in this computer, Recycle Bin)
+	if path{
+		path := RegExReplace(path, "ftp://.*@","ftp://")
+		StringReplace, path, path, file:///
+		StringReplace, path, path, /, \, All 
+		
+		; thanks to polyethene
+		Loop
+			If RegExMatch(path, "i)(?<=%)[\da-f]{1,2}", hex)
+				StringReplace, path, path, `%%hex%, % Chr("0x" . hex), All
+			Else Break
+		path.="\"
+		baseLength:=StrLen(path)+1
+	}else
+		baseLength:=1
 	return path
 }
 Explorer_GetAll(hwnd="")
@@ -91,6 +106,7 @@ Explorer_GetWindow(hwnd="")
 	if (class ~= "(Cabinet|Explore)WClass")
 	{
 		for window in ComObjCreate("Shell.Application").Windows
+			;	may miss some window (if explorer crashed?)
 			if (window.hwnd==hwnd)
 				return window
 	}
@@ -118,10 +134,15 @@ Explorer_Get(hwnd="",selection=false)
 	{
 		if selection
 			collection := window.document.SelectedItems
-		else
+		else	;all
 			collection := window.document.Folder.Items
 		for item in collection{
-			ret .= (pathOfSelected="File" ? SubStr(item.path,baseLength) : item.path) . "`n"
+			;	item: FolderItem object (Shldisp.h) - Win32 apps | Microsoft Docs
+			;		https://docs.microsoft.com/en-us/windows/win32/shell/folderitem
+			path:=item.Path
+			;	Contains the item's full path and name.
+			;		https://docs.microsoft.com/en-us/windows/win32/shell/folderitem-path
+			ret .= (pathOfSelected="File" ? SubStr(path,baseLength) : path) . "`n"
 		}
 		if selection
 			baseLength:=0

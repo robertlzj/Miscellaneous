@@ -3,7 +3,7 @@
 OpenAndSelect(sPath, Files*)
 {
 	; Make sure path has a trailing \
-	if (SubStr(sPath, 0, 1) <> "\")
+	if (sPath and SubStr(sPath, 0, 1) <> "\")
 		sPath .= "\"
 	
 	; Get a pointer to ID list (pidl) for the path

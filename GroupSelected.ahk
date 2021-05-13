@@ -51,16 +51,24 @@ Condition(){
 	return false
 }
 MakeGroup:
+	FileAppend, MakeGroup `n, *
 	ret:=SelectOrReadSelection()
 	if not ret{
 		TrayTip, %A_ScriptName%, Failed,,16
 		SoundPlay,*16
+		FileAppend, MakeGroup: Fialed`n, *
 		return
 	}
 	index:=SubStr(A_ThisHotKey,2)
 	group:=StrSplit(ret,"`n")
+	path:=group[1]
+	file1:=group[2]
+	if not path{
+	
+	}
 	Groups[index]:=group
 	count:=group.Length()
+	FileAppend, MakeGroup: Done. Index=%index%`, Count=%count%`n`, Path=%path%`, File1=%file1%, *
 MakeGroup_Done:
 	TrayTip, %A_ScriptName%, Set group %index% with %count% file(s),,16
 	SoundPlay,*-1
