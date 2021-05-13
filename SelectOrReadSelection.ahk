@@ -9,11 +9,8 @@ If (A_ScriptFullPath=A_LineFile){
 	return
 	F1_SelectOrReadSelection:
 		ret := SelectOrReadSelection()
-		if(ret){
-			FileAppend, % ret, *, UTF-8
-			If (A_ScriptFullPath=A_LineFile)
-				MsgBox, % ret
-		}
+		if(ret)
+			FileAppend, % ret, *
 		return
 	Exit_SelectOrReadSelection:
 		ExitApp
@@ -33,7 +30,7 @@ SelectOrReadSelection(params*){
 		if(path="ERROR")
 			return
 		sel := Explorer_GetSelected()
-		if(path="ERROR")
+		if(sel="ERROR")
 			return
 		ret := path . (sel?"`n" . sel:"") 
 		return ret
