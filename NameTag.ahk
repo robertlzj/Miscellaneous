@@ -4,6 +4,7 @@
 ;~ a:={1:"A","1":"B"}
 ;~ return
 #Include *i NameTag.data
+#Include dataFromClipboard.ahk
 InputBoxHeight:=130
 separator:="¡¤"
 if not dataArrary
@@ -165,19 +166,6 @@ handle:
 	active:=true
 	SoundPlay % (activateFileCount or mode="add")?"*-1":"*16"
 	return
-	
-dataFromClipboard(){
-	;cant get path on external device like phone
-	originalClipboard:=ClipboardAll
-	Clipboard=
-	ClipWait,0.5
-	Send ^c
-	ClipWait,0.5
-	clipboard := clipboard	; Convert any copied files, HTML, or other formatted text to plain text.
-	text:=Clipboard
-	Clipboard:=originalClipboard
-	return text
-}
 WriteLog(log){
 	if log
 		FileAppend,% A_Now "`t:" log "`n",NameTag.log.txt,UTF-8
