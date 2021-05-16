@@ -4,7 +4,7 @@
 ;~ a:={1:"A","1":"B"}
 ;~ return
 #Include *i NameTag.data
-#Include dataFromClipboard.ahk
+#Include dataFromToClipboard.ahk
 InputBoxHeight:=130
 separator:="¡¤"
 if not dataArrary
@@ -38,7 +38,7 @@ condition(){
 		Sleep 500
 		ExitApp
 	}
-	if dataFromClipboard()
+	if dataFromToClipboard()
 		return
 	condition:=!condition
 	if condition{
@@ -86,7 +86,7 @@ handle:
 	key:=A_ThisHotkey
 	data:=dataArrary[key ""]
 	;~ if A_CaretX
-		;~ data:=dataFromClipboard()
+		;~ data:=dataFromToClipboard()
 	if not data{
 		gosub, writeData
 		if not data or ErrorLevel	;cancel
@@ -98,7 +98,7 @@ handle:
 		active:=key="``"?true:false
 		;	first time/new start
 	}
-	filePath:=dataFromClipboard()
+	filePath:=dataFromToClipboard()
 	if(previousFilePath!=filePath){
 		previousFilePath:=filePath
 		active:=key="``"?true:false

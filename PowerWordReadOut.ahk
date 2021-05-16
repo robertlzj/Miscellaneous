@@ -1,6 +1,6 @@
 #SingleInstance,Force
 #NoEnv
-#Include dataFromClipboard.ahk
+#Include dataFromToClipboard.ahk
 Menu, Tray, Icon, PowerWord.ico
 ;~ CoordMode, Mouse, Screen
 ;~ CoordMode, Pixel, Screen
@@ -59,8 +59,9 @@ RAlt::
 	 */
 	MouseMove MouseX_original, MouseY_original
 	return
-#IfWinActive ahk_exe SciTE.exe
-F1::ExitApp
+#IfWinActive PowerWordReadOut.ahk ahk_exe SciTE.exe
+F1::Reload
+F2::ExitApp
 SearchIcon(X_offset:=0, Y_offset:=0){
 	global
 	local OutputVarX
@@ -85,13 +86,14 @@ SearchIcon(X_offset:=0, Y_offset:=0){
 #If
 $!+f::
 	;~ Send ^c
-	dataFromClipboard(true)
+	contentToSearch:=dataFromToClipboard()
 	Send !+f
 	WinWaitActive ahk_class QTool ahk_exe PowerWord.exe,,0.5
 	if ErrorLevel
 		return
 	Send ^a
-	Send ^v{Enter}
+	dataFromToClipboard(contentToSearch)
+	Send {Enter}
 	return
 
 #IfWinActive ahk_exe msedge.exe	;”Œ¿¿∆˜
