@@ -36,7 +36,7 @@ F1::
 	}
 	return
 F2::
-	MsgBox % dataFromClipboard()
+	MsgBox % dataFromToClipboard()
 	return
 q:: ;desktop get paths of selected files (tested on Windows 7)
 ;MsgBox, % JEE_ExpGetSelDesktop()
@@ -59,7 +59,7 @@ JEE_ExpGetSelDesktop(vSep="`n")
 	return SubStr(vOutput, 1, -StrLen(vSep))
 }
 ;----
-dataFromClipboard(){
+dataFromToClipboard(){
 	;cant get path on external device like phone
 	originalClipboard:=ClipboardAll
 	Clipboard=
