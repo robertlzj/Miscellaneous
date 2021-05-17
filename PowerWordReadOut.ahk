@@ -95,8 +95,5 @@ $!+f::
 	dataFromToClipboard(contentToSearch)
 	Send {Enter}
 	return
-
-#IfWinActive ahk_exe msedge.exe	;ÓÎÀÀÆ÷
-!r::Send ^+u	;read aloud
 #If
 
