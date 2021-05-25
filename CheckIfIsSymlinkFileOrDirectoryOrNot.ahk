@@ -1,26 +1,27 @@
-;i need help, how can i check a file is a "Symlink" file - Ask for Help - AutoHotkey Community
+Ôªø;i need help, how can i check a file is a "Symlink" file - Ask for Help - AutoHotkey Community
 #SingleInstance, Force
 ;https://autohotkey.com/board/topic/116161-i-need-help-how-can-i-check-a-file-is-a-symlink-file/page-2#entry671220
 SetBatchLines -1
 ComObjError(false)
 
-;----test----
-;~ symlink=symlink_Shell
-symlink=symlink_Cmd
-previous:=Clipboard
-Loop{
-	InputBox, OutputVar_file, Test, Input file/folder path to check,,,180,,,,,% previous
-	if ErrorLevel
-		ExitApp
-	previous:=OutputVar_file:=Trim(OutputVar_file,"""")
-	if not FileExist(OutputVar_file)
-		continue
-	if %symlink%(OutputVar_file,target,type)
-		MsgBox % OutputVar_file " is a symlink.`nTarget: " target "`nType: " type
-	else
-		MsgBox "%OutputVar_file%" is not a symlink
+If (A_ScriptFullPath=A_LineFile){ ;test
+	;~ symlink=symlink_Shell
+	symlink=symlink_Cmd
+	previous:=Clipboard
+	Loop{
+		InputBox, OutputVar_file, Test, Input file/folder path to check,,,180,,,,,% previous
+		if ErrorLevel
+			ExitApp
+		previous:=OutputVar_file:=Trim(OutputVar_file,"""")
+		if not FileExist(OutputVar_file)
+			continue
+		if %symlink%(OutputVar_file,target,type)
+			MsgBox % OutputVar_file " is a symlink.`nTarget: " target "`nType: " type
+		else
+			MsgBox "%OutputVar_file%" is not a symlink
+	}
 }
-return
+
 ;https://autohotkey.com/board/topic/116161-i-need-help-how-can-i-check-a-file-is-a-symlink-file/page-2#entry671199
 symlink_Shell(filepath,ByRef target="", ByRef type="")
 {
@@ -33,7 +34,7 @@ symlink_Shell(filepath,ByRef target="", ByRef type="")
 	;	L: Link?
 	status := objFolder.GetDetailsOf(objFolderItem, 202)
 	;	202: link status (see iColumn bellow)
-	;	"Œ¥Ω‚Œˆ°∞ test from symlink or normal file / folder
+	;	"Êú™Ëß£Êûê‚Äú test from symlink or normal file / folder
 	target := objFolder.GetDetailsOf(objFolderItem, 203)
 	;	203: Link target (absolute) (see iColumn bellow)
 	;iColumn:
@@ -85,4 +86,13 @@ symlink_Cmd(filepath,ByRef target="", ByRef type="")
 	}
 	else
 		return 0
+}
+GetAbsoluteTarget(path){
+	;from/see symlink_Shell()
+	SplitPath, path , FileName, DirPath,
+	objShell :=   ComObjCreate("Shell.Application")
+	objFolder :=   objShell.NameSpace(DirPath)      ;set the directry path
+	objFolderItem :=   objFolder.ParseName(FileName)   ;set the file name
+	target := objFolder.GetDetailsOf(objFolderItem, 203)
+	return target
 }

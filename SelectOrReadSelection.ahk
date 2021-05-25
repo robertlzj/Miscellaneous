@@ -1,4 +1,4 @@
-#SingleInstance,Force
+﻿#SingleInstance,Force
 #Include  ExplorerOpenAndSelect.ahk
 #Include  Get paths of selected items in an explorer window.ahk
 If (A_ScriptFullPath=A_LineFile){
