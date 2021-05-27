@@ -54,13 +54,14 @@ getDataFunction:=""
 	;~ MsgBox % command
 	;	MsgBox % IsAdmin_TestByWScriptCommand() "," A_IsAdmin
 	;	;	test result conflict - false, true (0,1).
-	;~ resutl:=RunWaitOne(command)
+	resutl:=RunWaitOne(command)
 	;	symbolic links can only be successfully created from an administrative command prompt. ln.exe will fail on symbolic links from a normal command prompt!
 	;	/ --symbolic Symbolic Links / ln - command line hardlinks
-	MsgBox ,,,% resutl
+	;~ MsgBox ,,,% resutl
 	FileAppend, % resutl, *
 	;	failed, get:
 	;	ln 2.933
+	;	success on Robert Work
 	OpenAndSelect(targetFolder,targetFileName)
 	return
 
