@@ -1,9 +1,38 @@
 ﻿#NoEnv
 #SingleInstance,Force
-shell := ComObjCreate("WScript.Shell")
-exec := shell.Exec(ComSpec " /C net session 2>&1")
-MsgBox % exec.StdOut.ReadAll() ", " A_LastError
-ExitApp
+if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
+	;	see https://www.cnblogs.com/RobertL/p/14818503.html
+	shell := ComObjCreate("WScript.Shell")
+	ExecThenOutput(command){
+		global shell
+		exec := shell.Exec(ComSpec " /V:ON /C " . command)
+		FileAppend, % exec.StdOut.ReadAll() "`n",*
+	}
+	;~ ExecThenOutput("net session 2>&1")
+	;	发生系统错误 5。拒绝访问。
+	;~ ExecThenOutput("echo %errorlevel%")
+	;	0
+	;~ ExecThenOutput("net session 2>&1 && echo %errorlevel%")
+	;	发生系统错误 5。拒绝访问。
+	;~ ExecThenOutput("net session 2>&1 `; echo %errorlevel%")
+	;	此命令的语法是:..
+	;~ ExecThenOutput("net session 2>&1 || echo %errorlevel%")
+	;	发生系统错误 5。拒绝访问。
+	;	0
+	;~ ExecThenOutput("chcp")
+	;	活动代码页: 936
+	;~ ExecThenOutput("net session 2>&1 | chcp")
+	;	活动代码页: 936
+	;~ ExecThenOutput("net session 2>&1 | echo %errorlevel%")
+	;	0
+	;~ ExecThenOutput("set x=0")
+	;~ ExecThenOutput("set x=1 & echo %x% !x!")
+	;	%x% 1
+	ExecThenOutput("net session >nul 2>&1 & echo !errorlevel!")
+	;	when not Administrator Mode 2
+	;	when  Administrator Mode 0
+	return
+}
 #If WinActive("test.ahk ahk_exe SciTE.exe")
 F1::ExitApp
 /* 
@@ -11,7 +40,7 @@ F1::ExitApp
  */
 F2::
 	shell := ComObjCreate("WScript.Shell")
-	exec := shell.Exec(ComSpec " /C net session 1>nul 2>&1")
+	exec := shell.Exec(ComSpec " /V /C net session >nul 2>&1 & echo !errorlevel!")
 	MsgBox % exec.StdOut.ReadAll()
 	return
 #If false
@@ -80,3 +109,4 @@ dataFromToClipboard(){
 	Clipboard:=originalClipboard
 	return text
 }
+
