@@ -1,11 +1,20 @@
-#NoEnv
+﻿#NoEnv
 #SingleInstance,Force
-#If WinActive("ahk_exe SciTE.exe")
+shell := ComObjCreate("WScript.Shell")
+exec := shell.Exec(ComSpec " /C net session 2>&1")
+MsgBox % exec.StdOut.ReadAll() ", " A_LastError
+ExitApp
+#If WinActive("test.ahk ahk_exe SciTE.exe")
 F1::ExitApp
 /* 
 	MsgBox % previousFilePath:=RegExReplace("a\b\ab`na\b\aab`na\b\abb`na\b\ab\a`na\b\ab","m`n)(?<=[/\\])\Q" . "ab" . "\E$","c") ", " ErrorLevel 
  */
-#If
+F2::
+	shell := ComObjCreate("WScript.Shell")
+	exec := shell.Exec(ComSpec " /C net session 1>nul 2>&1")
+	MsgBox % exec.StdOut.ReadAll()
+	return
+#If false
 F1::
 	FileSelectFile, OutputVar , M3, , ,
 	;	FileSelectFile, OutputVar , Options, RootDir\Filename, Title, Filter
