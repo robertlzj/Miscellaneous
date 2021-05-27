@@ -1,17 +1,19 @@
 ﻿#SingleInstance,Force
 
+; WshShell object: http://msdn.microsoft.com/en-us/library/aew9yb99?
+shell := ComObjCreate("WScript.Shell")
 goto end
 
 ;Autohotkey.chm \ Run[Wait] \ examples \ #2
 RunWaitOne(command) {
-    ; WshShell object: http://msdn.microsoft.com/en-us/library/aew9yb99?
-    shell := ComObjCreate("WScript.Shell")
+    global shell
     ; Execute a single command via cmd.exe
     exec := shell.Exec(ComSpec " /C " command)
     ; Read and return the command's output
     return exec.StdOut.ReadAll()
 }
 IsAdmin_TestByWScriptCommand(){
+    global shell
     ;   MsgBox % RunWaitOne("net session >nul 2>&1")
     ;   if ">nul", then nothing would be written to stdout (, neither errout)
     ;   if only ">nul", nothing would be written to stdout (, neither content of "发生系统错误 5。拒绝访问。")
@@ -26,8 +28,10 @@ IsAdmin_TestByWScriptCommand(){
     ;   ERRORLEVEL:
     ;       0: Administrative permissions confirmed.
     ;       2: failed
-
-    return not RunWaitOne("net session 2>&1")
+    exec := shell.Exec(ComSpec " /V /C net session >nul 2>&1 & echo !errorlevel!" )
+    ;   see https://www.cnblogs.com/RobertL/p/14818503.html
+    errorlevel:=exec.StdOut.ReadAll()
+    return Trim(errorlevel,"`r`n")=0
 }
 IsAdmin_TestByCommandLine(){
     RunWait %ComSpec% /C net session >nul 2>&1
@@ -48,7 +52,13 @@ F3::
 	;	result may not the same - A_IsAdmin=true, IsAdmin_TestByWScriptCommand()=false, IsAdmin_TestByCommandLine=true, when run under administrator.
     return
 F4::
-    IsAdmin_TestByCommandLine()
+    if(not A_IsAdmin){
+        ;	see A_IsAdmin / Operating System and User Info / Built-in Variables / Variables and Expressions
+        ;	see Run as Administrator / Run[Wait]
+        Run *RunAs "%A_AhkPath%" /restart "%A_ScriptFullPath%"
+        ;	could not debug..
+        ExitApp
+    }
     return
 #IfWinActive
 
