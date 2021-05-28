@@ -1,5 +1,6 @@
 ﻿#SingleInstance,Force
 #Include  ExplorerOpenAndSelect.ahk
+;	OpenAndSelect()
 #Include  Get paths of selected items in an explorer window.ahk
 If (A_ScriptFullPath=A_LineFile){
 	Hotkey,F1,F1_SelectOrReadSelection
