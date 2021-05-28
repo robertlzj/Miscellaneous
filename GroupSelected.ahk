@@ -1,4 +1,5 @@
 #SingleInstance,Force
+#NoEnv
 Menu, Tray, Icon, SG.ico
 TrayTip, %A_ScriptName%, Launch,,16
 #Include SelectOrReadSelection.ahk
@@ -38,6 +39,10 @@ return
 	}
 	return
 #If, Condition()
+#IfWinActive GroupSelected.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+F1::Reload
+F2::ExitApp
+#IfWinActive
 #If
 Condition(){
 	global condition
@@ -99,6 +104,7 @@ GetGroup:
 	index:=A_ThisHotKey
 	if Groups[index]
 		SelectOrReadSelection(Groups[index]*)
+	;~ MsgBox % Groups[1] ", " Groups[1][1] ", " Groups[1][2] ", " Groups[1][3]
 	return
 /* 
 	DataFileName(){
