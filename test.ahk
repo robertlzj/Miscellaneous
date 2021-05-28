@@ -40,6 +40,15 @@ F1::ExitApp
 /* 
 	MsgBox % previousFilePath:=RegExReplace("a\b\ab`na\b\aab`na\b\abb`na\b\ab\a`na\b\ab","m`n)(?<=[/\\])\Q" . "ab" . "\E$","c") ", " ErrorLevel 
  */
+ #If
+ F2::
+	nl:="`n"
+	Length:=Length?Length:0
+	NeedleRegEx :="P)·?[^·]+?.{" Length "," Length "}$"
+	FoundPos:=RegExMatch(Clipboard,NeedleRegEx,Length)
+	ToolTip % FoundPos nl Length nl Clipboard nl NeedleRegEx nl SubStr(Clipboard,FoundPos,Length)
+	return
+ #If WScript
 F2::
 	shell := ComObjCreate("WScript.Shell")
 	exec := shell.Exec(ComSpec " /V /C net session >nul 2>&1 & echo !errorlevel!")
