@@ -1,7 +1,19 @@
 ﻿#SingleInstance,Force
 
+;(Solved) How to hide cmd window? - AutoHotkey Community
+;   https://www.autohotkey.com/boards/viewtopic.php?t=4075
+    dhw := A_DetectHiddenWindows
+    DetectHiddenWindows On
+    Run "%ComSpec%" /k,, Hide, CommandLine_pid
+    while !(hConsole := WinExist("ahk_pid" CommandLine_pid))
+        Sleep 10
+    DllCall("AttachConsole", "UInt", CommandLine_pid)
+    DetectHiddenWindows %dhw%
+    OnExit("CommandLine_OnExit")
+
 ; WshShell object: http://msdn.microsoft.com/en-us/library/aew9yb99?
-shell := ComObjCreate("WScript.Shell")
+    shell := ComObjCreate("WScript.Shell")
+
 goto end
 
 ;Autohotkey.chm \ Run[Wait] \ examples \ #2
@@ -39,6 +51,13 @@ IsAdmin_TestByCommandLine(){
      ;   ERRORLEVEL:
     ;       0: Administrative permissions confirmed.
     ;       2: failed
+}
+CommandLine_OnExit(){
+    global CommandLine_pid
+    DllCall("FreeConsole")
+    Process Exist, %pid%
+    if (ErrorLevel == CommandLine_pid)
+        Process Close, %pid%
 }
 
 ;----debug/test----
