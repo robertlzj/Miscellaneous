@@ -1,5 +1,7 @@
 ﻿#NoEnv
 #SingleInstance,Force
+
+return
 if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
 	;	see https://www.cnblogs.com/RobertL/p/14818503.html
 	shell := ComObjCreate("WScript.Shell")
@@ -42,6 +44,11 @@ F2::
 	shell := ComObjCreate("WScript.Shell")
 	exec := shell.Exec(ComSpec " /V /C net session >nul 2>&1 & echo !errorlevel!")
 	MsgBox % exec.StdOut.ReadAll()
+	return
+#If
+F1::
+	ControlGetFocus, OutputVar,A
+	ToolTip % OutputVar ", " ErrorLevel
 	return
 #If false
 F1::
