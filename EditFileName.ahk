@@ -1,29 +1,31 @@
 #SingleInstance,Force
+#NoEnv
+Length:=0
 #If WinActive("ahk_exe explorer.exe") and Rename()
 F2::
-	if not FileNameWithoutExt
-	{
-		ControlGetText, OutputVar,Edit1,A
-		FileName:=OutputVar
-		FileAppend File name: %FileName%`n,*
-		FileNameWithoutExt:=RegExReplace(FileName,"(\.[^.]*)?$","")
-		FileAppend File name without extension: %FileNameWithoutExt%`n,*
-		Length:=0
-	}
+	ControlGetText, OutputVar,Edit1,A
+	FileName:=OutputVar
+	FileAppend File name: %FileName%`n,*
+	FileNameWithoutExt:=RegExReplace(FileName,"(\.[^.]*)?$","")
+	TotalLength:=StrLen(FileNameWithoutExt)
+	FileAppend File name without extension: %FileNameWithoutExt%`n,*
 	NeedleRegEx :="P)¡¤?[^¡¤]+?.{" Length "," Length "}$"
 	FoundPos:=RegExMatch(FileNameWithoutExt,NeedleRegEx,Length)
 	FileAppend FoundPos: %FoundPos%`, Length: %Length%`n,*
-	if not Length or FoundPos=1{
+	if FoundPos=1
 		Send ^a
-		goto Abort
+		;~ goto Abort
+	else if not Length
+		SendInput ^{Home}{Right %TotalLength%}
+	else{
+		SelectionLength:=Length-1
+		SendInput  ^{Home}{Right %FoundPos%}+{Right %SelectionLength%}
 	}
-	SelectionLength:=Length-1
-	SendInput  {Home}{Right %FoundPos%}+{Right %SelectionLength%}
 	return
 #If WinActive("ahk_exe explorer.exe")
 ~F2::
 Abort:
-	FileNameWithoutExt:=Length:=""
+	FileNameWithoutExt:=Length:=TotalLength:=""
 	return
 Rename(){
 	ControlGetFocus, OutputVar,A
