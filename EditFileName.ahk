@@ -1,6 +1,7 @@
 #SingleInstance,Force
 #NoEnv
 Length:=0
+Menu, Tray, Icon, EditFileName.ico
 #If WinActive("ahk_exe explorer.exe") and Rename()
 F2::
 	ControlGetText, OutputVar,Edit1,A
