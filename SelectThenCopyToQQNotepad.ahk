@@ -1,10 +1,13 @@
 #SingleInstance Force
 /* Use mouse to select, release mouse button with LControl pressed will copy and paste selection to QQNotepad.
 */
+#Include dataFromToClipboard.ahk
 Menu, Tray, Icon, SC.ico
 while(true){
 	currentActiveWindow:=WinExist("A") 
-	WinWaitNotActive,A
+	WinWaitNotActive, ahk_id %currentActiveWindow%
+	;	WinWaitNotActive, A
+	;	not work between two Edge (but works between two notepad)
 	lastActiveWindow:=currentActiveWindow
 	OutputDebug, lastActiveWindow is: %lastActiveWindow%.
 }
@@ -16,25 +19,31 @@ return
 #If GetKeyState("LControl")==1 and not IsHangOut()
 ~*LButton up::
 	OutputDebug, ~*LButton up with LControl down
-	if(A_TickCount-p<200){
-		OutputDebug, skip.
+	if(A_TickCount-p<200){	;click
+		OutputDebug, skip click.
 		return
 	}
+	LButtonUpWithLControlDown:=true
+	return
 #If GetKeyState("LButton")==1 and not IsHangOut()
 $^c::
-	OutputDebug, Copy & Paste
-	originalClipboard:=ClipboardAll
-	Clipboard=
-	Send, ^c
-	ClipWait, 1
-	if(ErrorLevel==1)
-		return
-	EnablePaste:=true
+	;	originalClipboard:=ClipboardAll
+	;	Clipboard=
+	;	Send, ^c
+	;	ClipWait, 1
+	;	if(ErrorLevel==1)
+	;		return
+	;	ContentToPaste:=true
+	ContentToPaste:=dataFromToClipboard()
+	OutputDebug, % "Copy & Paste" (ContentToPaste?" (ContentToPaste exist)":"")
 	return
-#If EnablePaste
+#If LButtonUpWithLControlDown
 *~LControl up::
-	OutputDebug, LControl up (EnablePaste==true)
-	EnablePaste:=false
+	LButtonUpWithLControlDown:=false
+	ContentToPaste:=dataFromToClipboard()
+	OutputDebug,% "LControl up "  (ContentToPaste?"(ContentToPaste exist)":"")
+	if not ContentToPaste
+		return
 	if(lastActiveWindow and lastActiveWindow!=currentActiveWindow and WinExist("ahk_id " lastActiveWindow)){
 		WinActivate, ahk_id %lastActiveWindow%
 		_:=currentActiveWindow
@@ -42,9 +51,17 @@ $^c::
 		lastActiveWindow:=_
 		OutputDebug, lastActiveWindow is: %lastActiveWindow%.
 	}else{
-		lastActiveWindow:=WinExist("A")
+		OutputDebug, Activate QQNotepad
+		_:=WinExist("A")
 		Send #``
+		WinWaitActive ahk_exe QQNotepad_V2.12.exe,,0.5
+		if ErrorLevel{	;timeout
+			OutputDebug, Activate OONotepad failed.
+			return
+		}
 		currentActiveWindow:=WinExist("A")
+		if currentActiveWindow!=_
+			lastActiveWindow:=_
 	}
 	if false{
 		Input i,L1 T2,{esc} ;,{enter}{,}{space}
@@ -54,18 +71,23 @@ $^c::
 			lastInput:=i
 			OutputDebug, Update input "%i%"
 		}
-		Clipboard.=i?i:lastInput
+		ContentToPaste.=i?i:lastInput
 	}
 	method:=2
 	if(method==1)
-		SendInput % Clipboard
+		SendInput % ContentToPaste
 	else{
-		Send ^v
+		;	Send ^v
+		dataFromToClipboard(ContentToPaste)
 		Sleep 200
 	}
-	Clipboard:=originalClipboard
+	;	Clipboard:=originalClipboard
+	ContentToPaste:=""
 	return
 IsHangOut(winTitle:="A"){
 	MouseGetPos,,,OutputVarWin
 	return OutputVarWin!=WinActive(winTitle)
 }
+#IfWinActive SelectThenCopyToQQNotepad.ahk ahk_exe SciTE.exe
+F1::Reload
+F2::ExitApp
