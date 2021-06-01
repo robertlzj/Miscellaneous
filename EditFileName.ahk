@@ -2,9 +2,10 @@
 #NoEnv
 Length:=0
 Menu, Tray, Icon, EditFileName.ico
+Menu, Tray, Tip, in explorer F2 to switch select section`nin editor F1 reload/F2 exit
 #If WinActive("ahk_exe explorer.exe") and Rename()
 F2::
-	ControlGetText, OutputVar,Edit1,A
+	ControlGetText, OutputVar,% fileNameEditor,A
 	FileName:=OutputVar
 	FileAppend File name: %FileName%`n,*
 	FileNameWithoutExt:=RegExReplace(FileName,"(\.[^.]*)?$","")
@@ -30,7 +31,11 @@ Abort:
 	return
 Rename(){
 	ControlGetFocus, OutputVar,A
-	return ErrorLevel=0 and OutputVar="Edit1"
+	global fileNameEditor
+	fileNameEditor:=OutputVar
+	return ErrorLevel=0 and fileNameEditor~="^Edit\d"
+	;	Edit1 may be path in address bar, then Edit2 is file name
+	;		test in explorer on "C:\Users\RobertLin\Documents"
 }
 #IfWinActive EditFileName.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
 F1::Reload
