@@ -3,6 +3,13 @@ CoordMode, Menu, Screen
 CoordMode, Mouse, Screen
 ;	relative to the entire screen
 
+;{
+	#Include *i Menu_IdContent.ahk
+	#Include *i Menu_IndexId.ahk
+	MemberList:=[ ;index-id
+	]
+;}
+
 ; Create the popup menu by adding some items to it.
 Menu, MyMenu, Add, &1 Item1, MenuHandler
 Menu, MyMenu, Add,&2 Item2, MenuHandler
