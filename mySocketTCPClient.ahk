@@ -24,9 +24,11 @@ F2::
 		ToolTip my Socket`nConnet Close
 OnExit:
 		client.Disconnect()
-	}else
+		return
+	}else{
 		ToolTip,
-	return
+		ExitApp
+	}
 #IfWinActive ahk_exe SciTE.exe
 F1::
 	Send {F5}

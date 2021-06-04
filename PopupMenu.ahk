@@ -12,6 +12,7 @@ CoordMode, Mouse, Screen
 
 ; Create the popup menu by adding some items to it.
 Menu, MyMenu, Add, &1 Item1, MenuHandler
+Menu, MyMenu, Add, &1 Item1, MenuHandler2
 Menu, MyMenu, Add,&2 Item2, MenuHandler
 Menu, MyMenu, Add  ; Add a separator line.
 
@@ -43,6 +44,9 @@ Menu, MyMenu, Add, MenuHandler
 
 return  ; End of script's auto-execute section.
 
+MenuHandler2:
+	MsgBox This will overwrite previous define.
+	return
 MenuHandler:
 	ModiferState:=GetKeyState("Shift")?"Holding Shift down"
 		:(GetKeyState("Ctrl")?"Holding Ctrl down":"-")

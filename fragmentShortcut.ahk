@@ -37,7 +37,8 @@ SetTitleMatchMode, 2
 #IfWinActive fragmentShortcut.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
 F1::Reload
 F2::ExitApp
-#IfWinActive AutoHotkey Help ahk_class HH Parent ahk_exe SciTE.exe
+#IfWinActive AutoHotkey Help ahk_class HH Parent ;ahk_exe SciTE.exe
+;	ahk_exe hh.exe
 !1::!c
 !2::Send !n^a
 !3::Send !s^a
