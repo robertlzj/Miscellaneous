@@ -5,7 +5,7 @@
 #Include *i NameTag.data
 #Include dataFromToClipboard.ahk
 #Include TrayTip.ahk
-Menu, Tray, Tip, click F2 without selection to start/stop`,`nctrl 1~g to set`,`n 1~g to apply`nin editor F1 reload/F2 exit
+Menu, Tray, Tip, click F2 without selection to start/stop`,`nctrl 1~g to set`, 1~g to apply`nin editor F1 reload/F2 exit
 InputBoxHeight:=130
 separator:="¡¤"
 if not dataArrary
