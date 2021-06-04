@@ -12,8 +12,8 @@ while(true){
 	OutputDebug, lastActiveWindow is: %lastActiveWindow%.
 }
 return
-~*LButton::
-	OutputDebug, ~*LButton
+~LButton::
+	OutputDebug, ~LButton
 	p:=A_TickCount
 	return
 #If GetKeyState("LControl")==1 and not IsHangOut()
