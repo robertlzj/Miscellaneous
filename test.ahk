@@ -35,6 +35,8 @@ if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
 	;	when  Administrator Mode 0
 	return
 }
+#IfWinActive ahk_exe EXCEL.EXE
+NumpadDot::Tab
 #If WinActive("test.ahk ahk_exe SciTE.exe")
 F1::ExitApp
 F2::Reload
