@@ -40,7 +40,8 @@ e:=""
 				referFileName:=OutputVar
 				if ErrorLevel ;cancel
 					goto Abort
-				referFilePath:=sourceDirPath "\_ReferStorage_\" referFileName "." sourceFileExtension
+				referFolderPath:=sourceDirPath "\_ReferStorage_"
+				referFilePath:=referFolderPath "\" referFileName "." sourceFileExtension
 				if not FileExist(referFilePath){
 					prompt:=e
 					break
@@ -48,7 +49,16 @@ e:=""
 				prompt:="Identifier Name Exist.`n "
 				Default:=referFileName
 			}
+			Default:=e
+			if not FileExist(referFolderPath)
+				FileCreateDir, % referFolderPath
 			FileMove,% sourceFilePath,% referFilePath
+			;	The destination directory must already exist
+			if ErrorLevel{	;number of files that could not be moved due to an error
+				MsgBox File not move. Last Error: %A_LastError%.`nFrom: %sourceFilePath%`nTo: %referFilePath%.
+				;	0x3: The system cannot find the path specified.
+				goto Abort
+			}
 			HandleSpaceInPath(referFilePath)
 			if not sourceFileName~=("^""?" referFilePath "·?\b"){
 				MsgBox ,% 0x3|0x20,,Yes to change original file name to contain identifier?`nOr no to keep original and create an extra map file.
@@ -57,7 +67,7 @@ e:=""
 				IfMsgBox, No
 				{
 					originalFilePath:=sourceFilePath
-					extraMapFilePath:=sourceDirPath "\" sourceFileNameWithoutExt "·" referFileName "." sourceFileExtension
+					extraMapFilePath:=sourceDirPath "\" sourceFileNameWithoutExt "·" (referFileName=sourceFileNameWithoutExt?"":referFileName) "." sourceFileExtension
 					if FileExist(extraMapFilePath){
 						MsgBox %extraMapFilePath% exist.
 						goto Abort
