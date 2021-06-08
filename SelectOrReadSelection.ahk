@@ -17,6 +17,8 @@ If (A_ScriptFullPath=A_LineFile){
 		ExitApp
 }
 SelectOrReadSelection(params*){
+	;	params:
+	;		folder, file, file..
 	opens:=(A_ScriptFullPath=A_LineFile)?A_Args:params
 	length:=opens.Length()
 	if(length=1)
