@@ -36,54 +36,66 @@ e:=""
 			Default:=sourceFileNameWithoutExt
 			while true
 			{
-				InputBox, OutputVar,,Source File Name: %sourceFileName% `n%prompt%Set Abstract Identifier Name,,,160,,,,,% Default
-				referFileName:=OutputVar
+				InputBox, OutputVar,,Source File Name: %sourceFileName% `n%prompt%Set Abstract Identifier (without extension),,,160,,,,,% Default
+				referFileNameWithoutExt:=OutputVar
 				if ErrorLevel ;cancel
 					goto Abort
 				referFolderPath:=sourceDirPath "\_ReferStorage_"
-				referFilePath:=referFolderPath "\" referFileName "." sourceFileExtension
+				referFilePath:=referFolderPath "\" referFileNameWithoutExt "." sourceFileExtension
 				if not FileExist(referFilePath){
 					prompt:=e
 					break
 				}
 				prompt:="Identifier Name Exist.`n "
-				Default:=referFileName
+				Default:=referFileNameWithoutExt
 			}
 			Default:=e
-			if not FileExist(referFolderPath)
-				FileCreateDir, % referFolderPath
-			FileMove,% sourceFilePath,% referFilePath
-			;	The destination directory must already exist
-			if ErrorLevel{	;number of files that could not be moved due to an error
-				MsgBox File not move. Last Error: %A_LastError%.`nFrom: %sourceFilePath%`nTo: %referFilePath%.
-				;	0x3: The system cannot find the path specified.
-				goto Abort
-			}
-			HandleSpaceInPath(referFilePath)
-			if not sourceFileName~=("^""?" referFilePath "·?\b"){
+			;{Move
+				if not FileExist(referFolderPath)
+					FileCreateDir, % referFolderPath
+				moved:=false
+				FileMove,% sourceFilePath,% referFilePath
+				;	The destination directory must already exist
+				if ErrorLevel{	;number of files that could not be moved due to an error
+					MsgBox File not move. Last Error: %A_LastError%.`nFrom: %sourceFilePath%`nTo: %referFilePath%.
+					;	0x3: The system cannot find the path specified.
+					;	112: There is not enough space on the disk.
+					goto Abort
+				}
+				moved:=true
+			;}
+			referFilePathWithQuotation:=HandleSpaceInPath(referFilePath)
+			;~ MsgBox % (referFileNameWithoutExt=sourceFileName) "`n" referFileNameWithoutExt "`," sourceFileName	;test
+			if(referFileNameWithoutExt!=sourceFileNameWithoutExt){
+				;	;and not referFilePath~=("^""?\Q" sourceFileName "\E[·.]")
+				;	;	\b wont work correctly on string like chinese?
+				;	;	\b is equivalent to [a-zA-Z0-9_]
 				MsgBox ,% 0x3|0x20,,Yes to change original file name to contain identifier?`nOr no to keep original and create an extra map file.
 				IfMsgBox, Yes
-					originalFilePath:=sourceDirPath "\" referFileName "·" sourceFileName
+					originalFilePath:=sourceDirPath "\" referFileNameWithoutExt "·" sourceFileName
 				IfMsgBox, No
 				{
 					originalFilePath:=sourceFilePath
-					extraMapFilePath:=sourceDirPath "\" sourceFileNameWithoutExt "·" (referFileName=sourceFileNameWithoutExt?"":referFileName) "." sourceFileExtension
+					extraMapFilePath:=sourceDirPath "\" sourceFileNameWithoutExt "·" (referFileNameWithoutExt=sourceFileNameWithoutExt?"":referFileNameWithoutExt) "." sourceFileExtension
 					if FileExist(extraMapFilePath){
 						MsgBox %extraMapFilePath% exist.
 						goto Abort
 					}
 					HandleSpaceInPath(extraMapFilePath)
-					RunWaitOne("ln --symbolic " . referFilePath . " " . extraMapFilePath)
+					RunWaitOne("ln --symbolic " . referFilePathWithQuotation . " " . extraMapFilePath)
 					extraMapFilePath:=e
 				}
 				IfMsgBox, Cancel
 					goto Abort
 			}else
 				originalFilePath:=sourceFilePath
-			HandleSpaceInPath(originalFilePath)
-			RunWaitOne("ln --symbolic " . referFilePath . " " . originalFilePath)
-			referFilePath:=Trim(referFilePath,c)
+			RunWaitOne("ln --symbolic " . referFilePathWithQuotation . " " . HandleSpaceInPath(originalFilePath))
+			;~ referFilePath:=Trim(referFilePath,c)
 			originalFilePath:=e
+			Sleep 200
+			Send  {F5}
+			;~ MsgBox % sourceDirPath "\" referFileNameWithoutExt "." sourceFileExtension ;test
+			OpenAndSelect(sourceDirPath,referFileNameWithoutExt "." sourceFileExtension)
 		}else
 			referFilePath:=targetFilePath
 		targetFilePath:=e
@@ -91,9 +103,17 @@ e:=""
 		referFilePath:=sourceFilePath
 	SplitPath, referFilePath , _referFileName, _referDirPath, referFileExtension, referFileNameWithoutExt
 	FileAppend, % "referFilePath: " referFilePath . "`n",*
-	HandleSpaceInPath(referFilePath)
+	referFilePathWithQuotation:=HandleSpaceInPath(referFilePath)
 	return
 Abort:
+	if moved{	;cancel / move back
+		;~ MsgBox,% referFilePath "`n" sourceFilePath	;test
+		FileMove,% referFilePath,% sourceFilePath
+		;~ MsgBox % ErrorLevel "`n" A_LastError	;test
+		;	A_LastError:
+		;		123: The filename, directory name, or volume label syntax is incorrect.
+		moved:=false
+	}
 	referFilePath:=e
 	Exit
 !v::
@@ -114,7 +134,7 @@ Abort:
 	HandleSpaceInPath(targetFilePath)
 	;	HandleSpaceInPath(referFilePath)
 	;	shift upstream
-	command:="ln --symbolic " . referFilePath . " " . targetFilePath
+	command:="ln --symbolic " . referFilePathWithQuotation . " " . targetFilePath
 	targetFilePath:=Trim(targetFilePath,c)
 	;~ MsgBox % command
 	;	MsgBox % IsAdmin_TestByWScriptCommand() "," A_IsAdmin
@@ -151,12 +171,16 @@ ShellGetSelected(){
 }
 ;----debug/test----
 #IfWinActive ReferLink.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
-F1::Reload
+F1::
+	Send ^s
+	Reload
+	return
 F2::ExitApp
 #IfWinActive
 
-HandleSpaceInPath(ByRef path){
+HandleSpaceInPath(path){
 	global c
 	if(not path~="^"".*""$" and InStr(path," "))
 		path:=c . path . c
+	return path
 }
