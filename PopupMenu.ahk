@@ -11,6 +11,7 @@ CoordMode, Mouse, Screen
 ;	relative to the entire screen
 
 HotkeyMap:=[1,2,3,4,5,"q","w","e","r","t","a","s","d","f","g"]
+SubMenu_Index:=1
 
 ;{	construct menu
 	#Include *i Menu_IdContent.ahk
@@ -250,12 +251,17 @@ ShiftItemTopAfterPined(indexToShift){
 	}
 	return index_new
 }
-ConstructMenu(){
+ConstructMenu(menuStruct){
 	global Count_Show_Item_RootMenu,Menu_IdContent,Menu_IndexId,HotkeyMap
 	Loop % Count_Show_Item_RootMenu {
 		item:=Menu_IdContent[Menu_IndexId[A_Index]]
 		MenuItemName:="&" hotkeyMap[A_Index] " " item.Name
-		Menu, MyMenu, Add, % MenuItemName,% item.subMenu?(":" item.Handle):"MenuHandle",+Radio
+		type:=(IsLabel(item.Handle) or IsFunc(item.Handle))?"handle":"subMenu"
+		if type="subMenu" and not MenuStruct_MenuName[item]{
+			
+		}
+		;Menu, MyMenu, Add, % MenuItemName,% item.subMenu?(":" item.Handle):"MenuHandle",+Radio
+		Menu, MyMenu, Add, % MenuItemName,% type="handle"?item.Handle:(":" MenuStruct_MenuName[item]),+Radio
 		if item.Pin
 			Menu, MyMenu, Check, % MenuItemName
 	}
