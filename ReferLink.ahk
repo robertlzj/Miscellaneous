@@ -170,6 +170,9 @@ ShellGetSelected(){
 	file:=Explorer_GetSelected()
 	return folder . file
 }
+#IfWinActive ReferLink.ahk ahk_class #32770 ahk_exe AutoHotkey.exe	;Set Abstract Identifier
+!x::Send {Enter}	;use current file name
+
 ;----debug/test----
 #IfWinActive ReferLink.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
 F1::
