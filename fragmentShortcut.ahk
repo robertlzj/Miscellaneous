@@ -4,6 +4,18 @@
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
+
+#IfWinActive fragmentShortcut.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+F1::
+	Send +s
+	Reload
+	return
+F2::ExitApp
+
+#IfWinActive 删除文件 ahk_class #32770 ahk_exe PotPlayerMini64.exe
+Shift::Send {Enter}
+;	+Delete: in PotPlayer, delete file, prompt dialog whether to delete (to recycle bin)
+
 #If
 ~^+a::	;QQ screen capture
 	OutputDebug, QQ screen capture Lunch
@@ -34,9 +46,7 @@ SetTitleMatchMode, 2
 	}else
 		OutputDebug, Not found (%ErrorLevel%)
 	return
-#IfWinActive fragmentShortcut.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-F1::Reload
-F2::ExitApp
+
 #IfWinActive AutoHotkey Help ahk_class HH Parent ;ahk_exe SciTE.exe
 ;	ahk_exe hh.exe
 !1::!c
