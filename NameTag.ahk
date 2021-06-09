@@ -5,47 +5,68 @@
 #Include *i NameTag.data
 #Include dataFromToClipboard.ahk
 #Include TrayTip.ahk
-Menu, Tray, Tip, click F2 without selection to start/stop`,`nctrl 1~g to set`, 1~g to apply`nin editor F1 reload/F2 exit
-InputBoxHeight:=130
-separator:="¡¤"
-if not dataArrary
-	dataArrary:={}
-/* abandon
-	if not previousExitTime
-		previousExitTime:=A_TickCount
- */
-TrayTip,Name Tag, Launch,,16
-Menu, Tray, Icon, Rn(B).ico
-;~ SoundPlay,*64	;info
-SoundPlay,*16	;failed
-shortcutKeyArray:=["1","2","3","4","5","q","w","e","r","a","s","d","f"]
-Hotkey,If,condition()
-for i,key in shortcutKeyArray{
-	Hotkey,% key,handle
-	Hotkey,% "^" key,setData
-}
-Hotkey,If
-OnExit("Save")
+
+	Menu, Tray, Tip, click F2 without selection to start/stop`,`nctrl 1~g to set`, 1~g to apply`nin editor F1 reload/F2 exit
+	InputBoxHeight:=130
+	separator:="¡¤"
+	if not dataArrary
+		dataArrary:={}
+	windowsEnable:={}
+	;	[whnd]=true
+	/* abandon
+		if not previousExitTime
+			previousExitTime:=A_TickCount
+	 */
+	TrayTip,Name Tag, Launch,,16
+	Menu, Tray, Icon, Rn(B).ico
+	;~ SoundPlay,*64	;info
+	SoundPlay,*16	;failed
+	shortcutKeyArray:=["1","2","3","4","5","q","w","e","r","a","s","d","f"]
+	Hotkey,If,condition()
+	for i,key in shortcutKeyArray{
+		Hotkey,% key,handle
+		Hotkey,% "^" key,setData
+	}
+	Hotkey,If
+	OnExit("Save")
+	Loop{	;prompt if window enables Name Tag
+		WinWaitNotActive, A
+		if WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770"){
+			whnd:=WinExist("A")	;get WHND
+			windowEnable:=windowsEnable[whnd]
+			if windowEnable{
+				Menu, Tray, Icon, Rn(R).ico
+				TrayTip("Name Tag","Continue",16)
+				SoundPlay,*-1	;success
+			}
+		}
+	}
 return
+
 condition(){
-	global condition
-	return condition and not A_CaretX and ((WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770")))
+	global windowsEnable
+	whnd:=WinExist("A")	;get WHND
+	windowEnable:=windowsEnable[whnd]
+	return windowEnable and not A_CaretX and ((WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770")))
 }
+
 #If WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770")
 ~F2::
 	Sleep 200
 	ControlGetFocus, OutputVar,A
 	;~ if dataFromToClipboard()
 	if(OutputVar~="^Edit\d")	;edit file name
-		return
+		Exit
 	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<800){
 		TrayTip,Name Tag, Exit,,16
 		SoundPlay,*48	;Exclamation
 		Sleep 500
 		ExitApp
 	}
-	condition:=!condition
-	if condition{
+	whnd:=WinExist("A")	;get WHND
+	windowsEnable[whnd]:=!windowsEnable[whnd]
+	windowEnable:=windowsEnable[whnd]
+	if windowEnable{
 		Menu, Tray, Icon, Rn(R).ico
 		;~ TrayTip,Name Tag, Start,,16
 		TrayTip("Name Tag","Start",16)
@@ -59,9 +80,14 @@ condition(){
 		SoundPlay,*16	;remove
 	}
 	return
-#IfWinActive,ahk_exe SciTE.exe
-F1::Reload
+
+#IfWinActive NameTag.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
+F1::
+	Send +s
+	Reload
+	return
 F2::ExitApp
+
 #If condition()
 /* 
 	^`::
