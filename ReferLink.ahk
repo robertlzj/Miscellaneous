@@ -120,22 +120,21 @@ Abort:
 	if not referFilePath
 		Exit
 	targetFolder:=Explorer_GetPath()
+	;~ MsgBox % targetFolder	;test
 	if not targetFolder
 		Exit
 	targetIndex:=e
 	while true{
 		targetFileName:=referFileNameWithoutExt . (targetIndex?("·" . targetIndex):e) . (referFileExtension?("." referFileExtension):e)
 		targetFilePath:=targetFolder . targetFileName
+		;~ MsgBox % targetFilePath	;test
 		if not FileExist(targetFilePath)
 			break
 		targetIndex++
 	}
 	FileAppend, % "targetFilePath: " targetFilePath . "`n", *
-	HandleSpaceInPath(targetFilePath)
-	;	HandleSpaceInPath(referFilePath)
+	command:="ln --symbolic " . referFilePathWithQuotation . " " . HandleSpaceInPath(targetFilePath)
 	;	shift upstream
-	command:="ln --symbolic " . referFilePathWithQuotation . " " . targetFilePath
-	targetFilePath:=Trim(targetFilePath,c)
 	;~ MsgBox % command
 	;	MsgBox % IsAdmin_TestByWScriptCommand() "," A_IsAdmin
 	;	;	test result conflict - false, true (0,1).
@@ -160,7 +159,9 @@ Abort:
 	Send  {F5}
 	;~ OpenAndSelect(targetFolder,"")
 	OpenAndSelect(targetFolder,targetFileName)
-	Send  {F2}
+	;~ Send  {F2}
+	;~ Send  {F2}
+	;~ Send  {F2}
 	;~ MsgBox %targetFolder%`n%targetFileName%
 	return
 
