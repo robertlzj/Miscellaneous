@@ -89,7 +89,7 @@ writeData:
 	data:=outputVar
 	dataArrary[key ""]:=data
 	return
-handle:
+handle:	;edit file name
 	key:=A_ThisHotkey
 	data:=dataArrary[key ""]
 	;~ if A_CaretX
@@ -119,7 +119,7 @@ handle:
 		if(not fileAttribute or fileAttribute~="D")	;Directory
 			return
 	 */
-	dataPattern:="[." separator " ]\Q" . data . "\E[¡¤.]"
+	dataPattern:="[." separator " ]\Q" . data . "\E(?=[¡¤.])"
 	;	\b wont work correctly on string like chinese?
 	;	\b is equivalent to [a-zA-Z0-9_]
 	updateFileCount:=0
