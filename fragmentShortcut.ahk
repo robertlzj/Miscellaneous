@@ -6,15 +6,20 @@ SetTitleMatchMode, 2
 ;	2: anywhere
 
 #IfWinActive fragmentShortcut.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-F1::
-	Send +s
+$F1::
+	Send ^s
 	Reload
 	return
-F2::ExitApp
+$F2::ExitApp
 
+#IfWinActive ahk_class PotPlayer64 ahk_exe PotPlayerMini64.exe
+	$Del::Send +{Del}	;by default, del only apply to playlistS
 #IfWinActive 删除文件 ahk_class #32770 ahk_exe PotPlayerMini64.exe
-Shift::Send {Enter}
-;	+Delete: in PotPlayer, delete file, prompt dialog whether to delete (to recycle bin)
+	$Shift::
+	$Delete::
+		Send {Enter}
+		return
+	;	+Delete: in PotPlayer, delete file, prompt dialog whether to delete (to recycle bin)
 
 #If
 ~^+a::	;QQ screen capture
