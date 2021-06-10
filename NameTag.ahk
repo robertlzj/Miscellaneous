@@ -83,7 +83,7 @@ condition(){
 
 #IfWinActive NameTag.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
 F1::
-	Send +s
+	Send ^s
 	Reload
 	return
 F2::ExitApp
@@ -157,14 +157,17 @@ handle:	;edit file name
 			;A_LoopFileName: A_LoopFileExt
 			if not FileExist(A_LoopFileLongPath)
 				continue
-			if A_LoopFileName~=dataPattern{
-				if active
-					newFileName:=RegExReplace(A_LoopFileName,dataPattern,"")
-				else{
-					newFileName:=""
+			if A_LoopFileName~=dataPattern{	;found
+				newFileName:=RegExReplace(A_LoopFileName,dataPattern,"")
+				if active	;then remove
+					mode:="remove"
+				else{	;skip
+					mode:="activate"
+					;~ newFileName:=""
+					postfix:=A_LoopFileExt?("." . A_LoopFileExt):""
+					newFileName:=(postfix?SubStr( newFileName,1,-StrLen(postfix)):newFileName) . separator . data . postfix
 					activateFileCount++
 				}
-				mode:="remove"
 			}else{
 				mode:="add"
 				postfix:=A_LoopFileExt?("." . A_LoopFileExt):""
@@ -187,7 +190,10 @@ handle:	;edit file name
 				FileMove,% A_LoopFileLongPath,% folderPath . newFileName
 				updateFileCount++
 				if(ErrorLevel!=0){
+					;https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes
 					MsgBox,,Name Tag Error, % "failed. " A_LastError
+						. (A_LastError=32?"(file used)":"")
+					;	32: The process cannot access the file because it is being used by another process.
 					WriteLog(A_LoopFileLongPath " failed. " . A_LastError)
 				}else
 					WriteLog(A_LoopFileLongPath . "`t>`t" . newFileName)
@@ -200,7 +206,7 @@ handle:	;edit file name
 	;~ TrayTip,Name Tag, % text,,16
 	TrayTip("Name Tag",text,16)
 	active:=true
-	SoundPlay % (activateFileCount or mode="add")?"*-1":"*16"
+	SoundPlay % (activateFileCount or mode="add" or mode="activate")?"*-1":"*16"
 	return
 WriteLog(log){
 	if log
