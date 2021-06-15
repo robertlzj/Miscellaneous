@@ -12,6 +12,9 @@ $F1::
 	return
 $F2::ExitApp
 
+#IfWinActive ahk_class #32770 ahk_exe AutoHotkey.exe, 否(&N)
+Esc::!n
+
 #IfWinActive ahk_class PotPlayer64 ahk_exe PotPlayerMini64.exe
 	$Del::Send +{Del}	;by default, del only apply to playlistS
 #IfWinActive 删除文件 ahk_class #32770 ahk_exe PotPlayerMini64.exe
