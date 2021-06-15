@@ -15,10 +15,20 @@ If (A_ScriptFullPath=A_LineFile){ ;test
 	search:=EverythingDll
 	Loop{
 		inputbox, search, Search in everything:, Cancel to exit.`nRegEx enabled.,, 300, 150,,,,,% search
-		if(ErrorLevel or search="")
-			ExitApp
-		Search(search,true)
+		if(ErrorLevel)
+			if(search="")
+				ExitApp
+			else
+				search:=""
+		else
+			Search(search,true)
 	}
+	#IfWinActive EverythingSearchEngine.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+	$F1::
+		Send ^s
+		Reload
+		return
+	$F2::ExitApp
 }
 
 Search(search,regex){
@@ -44,10 +54,3 @@ EverythingSearchEngine_OnExit(){
 	DllCall(EverythingDll . "\Everything_Reset")
 	DllCall("FreeLibrary", "Ptr", EverythingMod)	
 }
-
-#IfWinActive EverythingSearchEngine.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-$F1::
-	Send ^s
-	Reload
-	return
-$F2::ExitApp
