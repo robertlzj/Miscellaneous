@@ -93,6 +93,7 @@ Explorer_GetAll(hwnd="")
 Explorer_GetSelected(hwnd="")
 {
 	return Explorer_Get(hwnd,true)
+	;	only contain file name (not contain folder)
 }
 
 Explorer_GetWindow(hwnd="")
@@ -136,6 +137,14 @@ Explorer_Get(hwnd="",selection=false)
 			collection := window.document.SelectedItems
 		else	;all
 			collection := window.document.Folder.Items
+		for item in collection{
+			path:=item.Path
+			break
+		}
+		if not baseLength{
+			RegExMatch(path,"P).*\\",baseLength)
+			baseLength++
+		}
 		for item in collection{
 			;	item: FolderItem object (Shldisp.h) - Win32 apps | Microsoft Docs
 			;		https://docs.microsoft.com/en-us/windows/win32/shell/folderitem
