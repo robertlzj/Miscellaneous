@@ -53,7 +53,7 @@ GetHardLinks(path_init)
 	} finally
 		DllCall("FindClose", "UInt", handle)
 	
-	return paths.Count()>1?paths:false
+	return paths.Count()>0?paths:false
 }
 
 If (A_ScriptFullPath=A_LineFile){	;test
