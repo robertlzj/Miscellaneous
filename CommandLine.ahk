@@ -60,6 +60,13 @@ CommandLine_OnExit(){
         Process Close, %pid%
 }
 
+HandleSpaceInPath(path){
+	global c
+	if(not path~="^"".*""$" and InStr(path," "))
+		path:=c . path . c
+	return path
+}
+
 ;----debug/test----
 #IfWinActive CommandLine.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
 F1::Reload
