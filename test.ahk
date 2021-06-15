@@ -1,8 +1,7 @@
 ﻿#NoEnv
 #SingleInstance,Force
 
-myObject:={A:1,B:2}
-MsgBox % myObject.Count()
+MsgBox % "Aa"="aA"
 
 return
 if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
