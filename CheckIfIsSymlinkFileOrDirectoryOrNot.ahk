@@ -25,7 +25,9 @@ If (A_ScriptFullPath=A_LineFile){ ;test
 ;https://autohotkey.com/board/topic/116161-i-need-help-how-can-i-check-a-file-is-a-symlink-file/page-2#entry671199
 symlink_Shell(filepath,ByRef target="", ByRef type="")
 {
-	SplitPath, filepath , FileName, DirPath,
+	SplitPath, filepath , FileName, DirPath, OutExtension
+	if(OutExtension="lnk")
+		return 0
 	objShell :=   ComObjCreate("Shell.Application")
 	objFolder :=   objShell.NameSpace(DirPath)      ;set the directry path
 	objFolderItem :=   objFolder.ParseName(FileName)   ;set the file name
@@ -37,6 +39,7 @@ symlink_Shell(filepath,ByRef target="", ByRef type="")
 	;	"未解析“ test from symlink or normal file / folder
 	target := objFolder.GetDetailsOf(objFolderItem, 203)
 	;	203: Link target (absolute) (see iColumn bellow)
+	;	column is active for .lnk file
 	;iColumn:
 	;	Folder.GetDetailsOf method (Shlobj\_core.h) - Win32 apps | Microsoft Docs
 	;		https://docs.microsoft.com/en-us/windows/win32/shell/folder-getdetailsof
@@ -89,7 +92,10 @@ symlink_Cmd(filepath,ByRef target="", ByRef type="")
 }
 GetAbsoluteTarget(path){
 	;from/see symlink_Shell()
-	SplitPath, path , FileName, DirPath,
+	SplitPath, path , FileName, DirPath, OutExtension
+	;~ MsgBox % "(" OutExtension ")"	;test
+	if(OutExtension="lnk")
+		return
 	objShell :=   ComObjCreate("Shell.Application")
 	objFolder :=   objShell.NameSpace(DirPath)      ;set the directry path
 	objFolderItem :=   objFolder.ParseName(FileName)   ;set the file name
