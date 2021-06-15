@@ -14,7 +14,7 @@ Menu, Tray, Icon, ReferLink.ico
 #Include ExplorerOpenAndSelect.ahk
 ;	OpenAndSelect
 #Include CommandLine.ahk
-;	RunWaitOne
+;	RunWaitOne, HandleSpaceInPath
 getDataFunction:=""
 	;~ . "dataFromToClipboard"
 	. "ShellGetSelected"
@@ -181,10 +181,3 @@ F1::
 	return
 F2::ExitApp
 #IfWinActive
-
-HandleSpaceInPath(path){
-	global c
-	if(not path~="^"".*""$" and InStr(path," "))
-		path:=c . path . c
-	return path
-}
