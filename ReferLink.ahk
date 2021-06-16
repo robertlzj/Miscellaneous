@@ -1,7 +1,7 @@
 ﻿#SingleInstance,Force
 #NoEnv
 #Include HotKey_WhenEditInSciTE.ahk
-if(not A_IsAdmin){
+if(not A_IsAdmin and A_ScriptFullPath!=A_LineFile){
 	;	see A_IsAdmin / Operating System and User Info / Built-in Variables / Variables and Expressions
 	;	see Run as Administrator / Run[Wait]
 	Run *RunAs "%A_AhkPath%" /restart "%A_ScriptFullPath%"
@@ -16,6 +16,8 @@ Menu, Tray, Icon, ReferLink.ico
 ;	OpenAndSelect
 #Include CommandLine.ahk
 ;	RunWaitOne, HandleSpaceInPath
+#Include EverythingSearch.ahk
+;	Search
 getDataFunction:=""
 	;~ . "dataFromToClipboard"
 	. "ShellGetSelected"
@@ -165,11 +167,62 @@ Abort:
 	;~ Send  {F2}
 	;~ MsgBox %targetFolder%`n%targetFileName%
 	return
-
+!z::
+	data:=%getDataFunction%()
+	if not FileExist(data)	;or multiple files then
+		return
+	sourceFilePath:=data
+	SplitPath, sourceFilePath , sourceFileName, sourceDirPath, sourceFileExtension, sourceFileNameWithoutExt
+	ouputs:=""
+	results:=GetAllEntraces(sourceFilePath)
+	target:=results.TargetPath
+	;~ for path in results
+	length:=results.Length()
+	Loop % length
+		ouputs.=results[A_Index] "`n"
+	RTrim(results,"`n")
+	MsgBox Target path "%target%".`nAnd its %length% entrance:`n%ouputs%
+	return
+	
 ShellGetSelected(){
 	folder:=Explorer_GetPath()
 	file:=Explorer_GetSelected()
 	return folder . file
+}
+GetAllEntraces_Core(id,targetPath,ByRef results){
+	if((found:=Search(id " attrib:L")) and not results["_" id]){
+		;	"_" id: avoid conflict with index
+		;	"regex:""(?>·|^)" id "(?=·|\.|$)"" attrib:L"
+		;		slow
+		results["_" id]:=true
+		for path_relate in found
+			if(not results[path_relate]){
+				results[path_relate]:=true
+				if(targetPath=GetAbsoluteTarget(path_relate)){
+					results.Push(path_relate)
+					if RegExMatch(path_relate,"O).+\\(.+?)·" id "(?=·|.|$)",match){
+						id_alias:=match[1]
+						GetAllEntraces_Core(id_alias,targetPath,results)
+					}
+				}
+			}
+		}
+}
+GetAllEntraces(path,ByRef results:=""){
+	if not FileExist(path)
+		throw """%path%"" not a path."
+	if not targetPath:=GetAbsoluteTarget(path)
+		targetPath:=path
+	if not RegExMatch(path,"O).+\\(.+?)(?=·|\.|$)",match)
+		throw "should always find a name(id)."	;expect name like "·"
+	id:=match[1]
+	if not results{
+		results:={TargetPath:targetPath,(targetPath):true}
+	}
+	GetAllEntraces_Core(id,targetPath,results)
+	if(targetPath!=path)
+		GetAllEntraces(targetPath,results)
+	return results
 }
 #IfWinActive ReferLink.ahk ahk_class #32770 ahk_exe AutoHotkey.exe	;Set Abstract Identifier
 !x::Send {Enter}	;use current file name
