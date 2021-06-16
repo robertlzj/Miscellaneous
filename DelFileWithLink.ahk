@@ -5,6 +5,8 @@
 #Include CheckIfIsSymlinkFileOrDirectoryOrNot.ahk
 ;	GetAbsoluteTarget()
 #Include HotKey_WhenEditInSciTE.ahk
+#Include EverythingSearch.ahk
+;	Search()
 /* 
 	#IfWinActive DelFileWithLink.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
 	$F3::
@@ -42,9 +44,40 @@ $Del::	;del file(s), handle hard link entrance.
 				pathsToDelete.=entrances
 			IfMsgBox, Cancel
 				Exit
-		}else if(targetPath:=GetAbsoluteTarget(path)){	;symlink
+		}else if(targetPath:=GetAbsoluteTarget(path)){	;symlink entrance
 			symlinks[path]:=targetPath
 			symlinks.Push(path)
+		}else{	;check if is symlink source (refer)
+			if not RegExMatch(A_LoopField,"O)(.+?)(?=，|.|$)",match)
+				throw "should always find id."	;expect name like "，"
+			id:=match[1]
+			;~ if StrLen(id)<6
+				;~ continue
+			if not found:=Search("regex:""(?>，|^)" id "(?=，|.|$)"" attrib:L")
+				;	L: Reparse point
+				;	FILE_ATTRIBUTE_REPARSE_POINT
+				;		https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
+				continue
+			removeSymlink:=""
+			for path_relate in found
+				if(path=GetAbsoluteTarget(path_relate))
+					if(not removeSymlink){
+						MsgBox , % 0x3|0x20,,File "%A_LoopField%" is link target (such from "%path%").`nYes to Remove all`, No to keep symlinks (brokean)?
+						;	0x3: Yes/No/Cancel
+						;	0x20:	Icon Question
+						IfMsgBox, Cancel
+							Exit
+						IfMsgBox, No
+							break
+						removeSymlink:=path_relate
+					}else ;remove all
+						removeSymlink.="`n" path_relate
+			if(removeSymlink){
+				MsgBox, % 0x1|0x20,,Confirm to remove all?`nlink target: "%A_LoopField%" `nsymlink:`n%removeSymlink%
+				;	0x1: OK/Cancel
+				IfMsgBox, Cancel
+					Exit
+			}
 		}
 	if(symlinks.Count()>0){
 		path_targets:=""
