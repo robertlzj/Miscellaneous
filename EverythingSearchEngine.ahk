@@ -37,13 +37,14 @@ if(IsFileMethod="RequestAttribute"){
 }
 
 EverythingResult:={_NewEnum:"EverythingResultEnumerator",Count:"EverythingResultCount"}
+EverythingResultEnumerator:={Next:"EverythingResultEnumeratorNext"}
 
 OnExit("EverythingSearchEngine_OnExit")
 
 If (A_ScriptFullPath=A_LineFile){ ;test
 	search:=EverythingDll
 	search=regex:"(?<=^Every)th" regex:ing\d+ Files\
-	;	C:\ProgramFiles\EverythingToolbar-0.5.2\Everything64.dll
+	;	RobertWork: C:\ProgramFiles\EverythingToolbar-0.5.2\Everything64.dll
 	Loop{
 		inputbox, search, Search in everything:, Cancel to clear input`, then exit.`nRegEx enabled.,, 300, 150,,,,,% search
 		if(ErrorLevel)
@@ -64,65 +65,28 @@ If (A_ScriptFullPath=A_LineFile){ ;test
 			}
 		}
 	}
-	/* 
-		#IfWinActive EverythingSearchEngine.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-		$F3::
-			Send ^s
-			Reload
-		$F2::ExitApp
-	 */
 }
 
 Search(search){
 	global EverythingDll,IsFileMethod,EverythingResult,EverythingResultCount
-	/* 
-		static FILE_ATTRIBUTE_DIRECTORY:=0x10
-		;	File Attribute Constants (WinNT.h) - Win32 apps | Microsoft Docs
-		;		https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-	 */
 	DllCall(EverythingDll . "\Everything_SetSearch", "Str", search)
 	DllCall(EverythingDll . "\Everything_Query", "Int", True)
 	;	fast when default (query mode 1)
-	;~ if not DllCall(EverythingDll . "\Everything_Query", "Int", True)
-		;~ throw "Failed."
+	if not DllCall(EverythingDll . "\Everything_Query", "Int", True)
+		throw "Failed."
 	;~ DllCall(EverythingDll . "\Everything_SetRegex", "Int", enableRegex)
 	EverythingResultCount:=DllCall(EverythingDll . "\Everything_GetNumResults", "UInt")
 	if not EverythingResultCount
 		return
 	return EverythingResult
-	/* 
-		results:={}
-		result.SetCapacity(EverythingResultCount)
-		static GetResultPath:=EverythingDll . "\Everything_GetResultPath"
-		Loop % EverythingResultCount
-		{
-			index:=A_Index - 1
-			folder:=DllCall(EverythingDll . "\Everything_GetResultPath", "UInt", index, "Str")
-			;	result different from GetResultPath
-			file:=DllCall(EverythingDll . "\Everything_GetResultFileName", "UInt", index, "Str")
-			path:=folder "\" file
-			if (IsFileMethod="RequestAttribute"){
-				attribute:=DllCall(EverythingDll . "\Everything_GetResultAttributes", "UInt", index, "UInt")
-				isFile:=not attribute&FILE_ATTRIBUTE_DIRECTORY
-			}else if(IsFileMethod="FileExist")
-				isFile:=not InStr(FileExist(path),"D")
-			
-			;~ . " [" . DllCall(EverythingDll . "\Everything_GetResultExtension", "UInt", A_Index - 1, "Str") . "]"
-			;~ . " [" . DllCall(EverythingDll . "\Everything_GetResultDateModified", "UInt", A_Index - 1, "Str") . "]"
-			;	need EVERYTHING_REQUEST_*
-			
-			results[path]:=isFile?file:false	;is file
-		}
-		return results
-	 */
 }
 EverythingResultCount(){
 	global EverythingResultCount
 	return EverythingResultCount
 }
 EverythingResultEnumerator(){
-	global EverythingResultIndex:=0
-	return {Next:"EverythingResultEnumeratorNext"}
+	global EverythingResultIndex:=0,EverythingResultEnumerator
+	return EverythingResultEnumerator
 }
 EverythingResultEnumeratorNext(ByRef path,ByRef name){
 	static FILE_ATTRIBUTE_DIRECTORY:=0x10
@@ -138,7 +102,6 @@ EverythingResultEnumeratorNext(ByRef path,ByRef name){
 	;~ . " [" . DllCall(EverythingDll . "\Everything_GetResultDateModified", "UInt", A_Index - 1, "Str") . "]"
 	;	need EVERYTHING_REQUEST_*
 	
-	EverythingResultIndex++
 	path:=folder "\" file
 	if (IsFileMethod="RequestAttribute"){
 		attribute:=DllCall(GetResultAttributes, "UInt", EverythingResultIndex, "UInt")
@@ -146,6 +109,7 @@ EverythingResultEnumeratorNext(ByRef path,ByRef name){
 	}else if(IsFileMethod="FileExist")
 		isFile:=not InStr(FileExist(path),"D")
 	name:=isFile?file:false	;is file
+	EverythingResultIndex++
 	return true
 }
 EverythingSearchEngine_OnExit(){
