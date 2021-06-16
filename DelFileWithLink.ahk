@@ -4,14 +4,15 @@
 ;	Explorer_GetSelected
 #Include CheckIfIsSymlinkFileOrDirectoryOrNot.ahk
 ;	GetAbsoluteTarget()
-
-#IfWinActive DelFileWithLink.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-$F3::
-	Send ^s
-	Reload
-	return
-$F2::ExitApp
-
+#Include HotKey_WhenEditInSciTE.ahk
+/* 
+	#IfWinActive DelFileWithLink.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+	$F3::
+		Send ^s
+		Reload
+		return
+	$F2::ExitApp
+ */
 #If not A_CaretX and ((WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770")))
 $+Del::	;del file(s), handle hard link entrance.
 $Del::	;del file(s), handle hard link entrance.
