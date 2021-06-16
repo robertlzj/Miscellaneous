@@ -9,10 +9,29 @@
 ;		see bellow
 
 EverythingDll := "Everything" . (A_PtrSize == 8 ? "64" : "32") . ".dll"
-EverythingMod := DllCall("LoadLibrary", "Str", A_ScriptDir . "\" . EverythingDll, "Ptr")
+Folder:=SubStr(A_ProgramFiles,1,StrLen("C:\Program")) "Files\EverythingSDK"
+EverythingMod := DllCall("LoadLibrary", "Str", Folder . "\" . EverythingDll, "Ptr")
 if not EverythingMod
 	throw EverythingDll " not found."
+
+;~ IsFileMethod:="RequestAttribute"
+;~ IsFileMethod:="FileExist"
+;	affect query mode, both will slow query.
+IsFileMethod:="No"
+
+if(IsFileMethod="RequestAttribute"){
+	EVERYTHING_REQUEST_FILE_NAME:=0x00000001
+	EVERYTHING_REQUEST_PATH:=0x00000002
+	EVERYTHING_REQUEST_ATTRIBUTES:=0x00000100
+	DllCall(EverythingDll . "\Everything_SetRequestFlags", "UInt"
+	;	https://www.voidtools.com/support/everything/sdk/everything_setrequestflags/
+		, EVERYTHING_REQUEST_FILE_NAME
+		|EVERYTHING_REQUEST_PATH
+		|EVERYTHING_REQUEST_ATTRIBUTES)
+}
+
 OnExit("EverythingSearchEngine_OnExit")
+
 If (A_ScriptFullPath=A_LineFile){ ;test
 	search:=EverythingDll
 	search=regex:"(?<=^Every)th" regex:ing\d+ Files\
@@ -46,9 +65,13 @@ If (A_ScriptFullPath=A_LineFile){ ;test
 }
 
 Search(search){
-	global EverythingDll
+	global EverythingDll,IsFileMethod
+	static FILE_ATTRIBUTE_DIRECTORY:=0x10
+	;	File Attribute Constants (WinNT.h) - Win32 apps | Microsoft Docs
+	;		https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
 	DllCall(EverythingDll . "\Everything_SetSearch", "Str", search)
 	DllCall(EverythingDll . "\Everything_Query", "Int", True)
+	;	fast when default (query mode 1)
 	;~ if not DllCall(EverythingDll . "\Everything_Query", "Int", True)
 		;~ throw "Failed."
 	;~ DllCall(EverythingDll . "\Everything_SetRegex", "Int", enableRegex)
@@ -56,7 +79,7 @@ Search(search){
 	if not resultCount
 		return
 	results:={}
-	result.SetCapacity(resultCount+1)
+	result.SetCapacity(resultCount)
 	static GetResultPath:=EverythingDll . "\Everything_GetResultPath"
 	Loop % resultCount
 	{
@@ -64,15 +87,18 @@ Search(search){
 		folder:=DllCall(EverythingDll . "\Everything_GetResultPath", "UInt", index, "Str")
 		;	result different from GetResultPath
 		file:=DllCall(EverythingDll . "\Everything_GetResultFileName", "UInt", index, "Str")
-		attribute:=DllCall(EverythingDll . "\Everything_GetResultAttributes", "UInt", index)
-		;	always -1
+		path:=folder "\" file
+		if (IsFileMethod="RequestAttribute"){
+			attribute:=DllCall(EverythingDll . "\Everything_GetResultAttributes", "UInt", index, "UInt")
+			isFile:=not attribute&FILE_ATTRIBUTE_DIRECTORY
+		}else if(IsFileMethod="FileExist")
+			isFile:=not InStr(FileExist(path),"D")
+		
 		;~ . " [" . DllCall(EverythingDll . "\Everything_GetResultExtension", "UInt", A_Index - 1, "Str") . "]"
 		;~ . " [" . DllCall(EverythingDll . "\Everything_GetResultDateModified", "UInt", A_Index - 1, "Str") . "]"
-		;	not work?
-		path:=folder "\" file
-		;	results[path]:=InStr(FileExist(path),"D")?false:file	;is file
-		;	slow
-		results[path]:=InStr(attribute,"D")?false:file	;is file
+		;	need EVERYTHING_REQUEST_*
+		
+		results[path]:=isFile?file:false	;is file
 	}
 	return results
 }
