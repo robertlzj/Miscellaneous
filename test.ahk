@@ -1,9 +1,12 @@
 ﻿#NoEnv
 #SingleInstance,Force
 
-MsgBox % "Aa"="aA"
+o:={}
 
 return
+
+MsgBox % "Aa"="aA"
+
 if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
 	;	see https://www.cnblogs.com/RobertL/p/14818503.html
 	shell := ComObjCreate("WScript.Shell")
@@ -40,8 +43,8 @@ if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
 #IfWinActive ahk_exe EXCEL.EXE
 NumpadDot::Tab
 #If WinActive("test.ahk ahk_exe SciTE.exe")
-F1::ExitApp
-F2::Reload
+F2::ExitApp
+F3::Reload
 /* 
 	MsgBox % previousFilePath:=RegExReplace("a\b\ab`na\b\aab`na\b\abb`na\b\ab\a`na\b\ab","m`n)(?<=[/\\])\Q" . "ab" . "\E$","c") ", " ErrorLevel 
  */

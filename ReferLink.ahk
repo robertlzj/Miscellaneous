@@ -175,7 +175,7 @@ ShellGetSelected(){
 
 ;----debug/test----
 #IfWinActive ReferLink.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
-F1::
+F3::
 	Send ^s
 	Reload
 	return

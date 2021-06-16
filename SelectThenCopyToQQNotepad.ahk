@@ -89,5 +89,5 @@ IsHangOut(winTitle:="A"){
 	return OutputVarWin!=WinActive(winTitle)
 }
 #IfWinActive SelectThenCopyToQQNotepad.ahk ahk_exe SciTE.exe
-F1::Reload
+F3::Reload
 F2::ExitApp

@@ -40,7 +40,7 @@ return
 	return
 #If, Condition()
 #IfWinActive GroupSelected.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-F1::Reload
+F3::Reload
 F2::ExitApp
 #IfWinActive
 #If

@@ -69,15 +69,15 @@ HandleSpaceInPath(path){
 
 ;----debug/test----
 #IfWinActive CommandLine.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
-F1::Reload
+F3::Reload
 F2::ExitApp
-F3::
+F4::
 	MsgBox % "Is Admin: `n`tGet from A_IsAdmin: " (A_IsAdmin?"true":"false")
 	. "`n`tTest by command line from WScript: " (IsAdmin_TestByWScriptCommand()?"true":"false")
 	. "`n`tTest by command line from Run: " (IsAdmin_TestByCommandLine()?"true":"false")
 	;	result may not the same - A_IsAdmin=true, IsAdmin_TestByWScriptCommand()=false, IsAdmin_TestByCommandLine=true, when run under administrator.
     return
-F4::
+F5::
     if(not A_IsAdmin){
         ;	see A_IsAdmin / Operating System and User Info / Built-in Variables / Variables and Expressions
         ;	see Run as Administrator / Run[Wait]

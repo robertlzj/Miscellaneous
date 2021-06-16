@@ -60,7 +60,7 @@ RAlt::
 	MouseMove MouseX_original, MouseY_original
 	return
 #IfWinActive PowerWordReadOut.ahk ahk_exe SciTE.exe
-F1::Reload
+F3::Reload
 F2::ExitApp
 SearchIcon(X_offset:=0, Y_offset:=0){
 	global

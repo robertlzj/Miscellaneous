@@ -268,7 +268,7 @@ ConstructMenu(menuStruct){
 }
 
 #If WinActive("PopupMenu.ahk ahk_exe SciTE.exe")
-F1::Reload
+F3::Reload
 F2::ExitApp
 #If 
 Skip_To_End:
