@@ -16,9 +16,12 @@ $F1::
 		;	wont work
 		dataFromToClipboard:=dataFromToClipboard()
 		WinActivate	ahk_id %OutputVar%
-		WinWaitActive
-		Send !2^a
+		WinWaitActive	ahk_id %OutputVar%
+		Send !2
+		Sleep 200
+		Send ^a
 		dataFromToClipboard(dataFromToClipboard)
+		Send {Enter}
 	}else
 		Send {F1}
 	return
