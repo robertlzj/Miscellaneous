@@ -11,35 +11,41 @@
 ;	The Everything 1.4 SDK does not support multiple instances
 ;		https://www.voidtools.com/forum/viewtopic.php?f=12&t=9857
 
-EverythingDll := "Everything" . (A_PtrSize == 8 ? "64" : "32") . ".dll"
-Folder:=SubStr(A_ProgramFiles,1,StrLen("C:\Program")) "Files\EverythingSDK"
-EverythingMod := DllCall("LoadLibrary", "Str", Folder . "\" . EverythingDll, "Ptr")
-if not EverythingMod
-	throw EverythingDll " not found."
-GetResultPath:=EverythingDll . "\Everything_GetResultPath"
-GetResultFileName:=EverythingDll . "\Everything_GetResultFileName"
-GetResultAttributes:=EverythingDll . "\Everything_GetResultAttributes"
-
 IsFileMethod:="RequestAttribute"
 ;~ IsFileMethod:="FileExist"
 ;	affect query mode, both will slow query.
 ;~ IsFileMethod:="No"
 
-if(IsFileMethod="RequestAttribute"){
-	EVERYTHING_REQUEST_FILE_NAME:=0x00000001
-	EVERYTHING_REQUEST_PATH:=0x00000002
-	EVERYTHING_REQUEST_ATTRIBUTES:=0x00000100
-	DllCall(EverythingDll . "\Everything_SetRequestFlags", "UInt"
-	;	https://www.voidtools.com/support/everything/sdk/everything_setrequestflags/
-		, EVERYTHING_REQUEST_FILE_NAME
-		|EVERYTHING_REQUEST_PATH
-		|EVERYTHING_REQUEST_ATTRIBUTES)
-}
-
-EverythingResult:={_NewEnum:"EverythingResultEnumerator",Count:"EverythingResultCount"}
-EverythingResultEnumerator:={Next:"EverythingResultEnumeratorNext"}
-
-OnExit("EverythingSearchEngine_OnExit")
+;{EverythingSearch_Initial
+	global IsFileMethod
+	EverythingDll := "Everything" . (A_PtrSize == 8 ? "64" : "32") . ".dll"
+	Folder:=SubStr(A_ProgramFiles,1,StrLen("C:\Program")) "Files\EverythingSDK"
+	EverythingMod := DllCall("LoadLibrary", "Str", Folder . "\" . EverythingDll, "Ptr")
+	if not EverythingMod
+		throw EverythingDll " not found."
+	GetResultPath:=EverythingDll . "\Everything_GetResultPath"
+	GetResultFileName:=EverythingDll . "\Everything_GetResultFileName"
+	GetResultAttributes:=EverythingDll . "\Everything_GetResultAttributes"
+	
+	EverythingResult:={_NewEnum:"EverythingSearch_ResultEnumerator",Count:"EverythingSearch_ResultCount"}
+	EverythingSearch_ResultEnumerator:={Next:"EverythingSearch_ResultEnumeratorNext"}
+	
+	;initial state see: Everything_Reset
+	;	https://www.voidtools.com/support/everything/sdk/everything_reset/
+	
+	if(IsFileMethod="RequestAttribute"){
+		EVERYTHING_REQUEST_FILE_NAME:=0x00000001
+		EVERYTHING_REQUEST_PATH:=0x00000002
+		EVERYTHING_REQUEST_ATTRIBUTES:=0x00000100
+		DllCall(EverythingDll . "\Everything_SetRequestFlags", "UInt"
+		;	https://www.voidtools.com/support/everything/sdk/everything_setrequestflags/
+			, EVERYTHING_REQUEST_FILE_NAME
+			|EVERYTHING_REQUEST_PATH
+			|EVERYTHING_REQUEST_ATTRIBUTES)
+	}
+	
+	OnExit("EverythingSearch_OnExit")
+;}
 
 If (A_ScriptFullPath=A_LineFile){ ;test
 	search:=EverythingDll
@@ -54,8 +60,9 @@ If (A_ScriptFullPath=A_LineFile){ ;test
 				search:=""
 		else{
 			results:=Search(search)
+			count:=results.Count()
 			for path,file in results{
-				MsgBox % 0x4, Found,% A_Index "/" results.Count() ". Continue?`n"
+				MsgBox % 0x4, Found,% A_Index "/" count ". Continue?`n"
 					;	0x4: Yes/No
 					. path
 					. "`n"
@@ -67,33 +74,33 @@ If (A_ScriptFullPath=A_LineFile){ ;test
 	}
 }
 
+
 Search(search){
-	global EverythingDll,IsFileMethod,EverythingResult,EverythingResultCount
+	global EverythingDll,IsFileMethod,EverythingResult,EverythingSearch_ResultCount
 	DllCall(EverythingDll . "\Everything_SetSearch", "Str", search)
-	DllCall(EverythingDll . "\Everything_Query", "Int", True)
 	;	fast when default (query mode 1)
 	if not DllCall(EverythingDll . "\Everything_Query", "Int", True)
 		throw "Failed."
 	;~ DllCall(EverythingDll . "\Everything_SetRegex", "Int", enableRegex)
-	EverythingResultCount:=DllCall(EverythingDll . "\Everything_GetNumResults", "UInt")
-	if not EverythingResultCount
+	EverythingSearch_ResultCount:=DllCall(EverythingDll . "\Everything_GetNumResults", "UInt")
+	if not EverythingSearch_ResultCount
 		return
 	return EverythingResult
 }
-EverythingResultCount(){
-	global EverythingResultCount
-	return EverythingResultCount
+EverythingSearch_ResultCount(){
+	global EverythingSearch_ResultCount
+	return EverythingSearch_ResultCount
 }
-EverythingResultEnumerator(){
-	global EverythingResultIndex:=0,EverythingResultEnumerator
-	return EverythingResultEnumerator
+EverythingSearch_ResultEnumerator(){
+	global EverythingResultIndex:=0,EverythingSearch_ResultEnumerator
+	return EverythingSearch_ResultEnumerator
 }
-EverythingResultEnumeratorNext(ByRef path,ByRef name){
+EverythingSearch_ResultEnumeratorNext(ByRef path,ByRef name:=""){
 	static FILE_ATTRIBUTE_DIRECTORY:=0x10
 	;	File Attribute Constants (WinNT.h) - Win32 apps | Microsoft Docs
 	;		https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-	global EverythingDll,EverythingResultCount,EverythingResultIndex,GetResultAttributes,GetResultPath,GetResultFileName,IsFileMethod
-	if(not EverythingResultIndex<EverythingResultCount)
+	global EverythingDll,EverythingSearch_ResultCount,EverythingResultIndex,GetResultAttributes,GetResultPath,GetResultFileName,IsFileMethod
+	if(not EverythingResultIndex<EverythingSearch_ResultCount)
 		return
 	
 	folder:=DllCall(GetResultPath, "UInt", EverythingResultIndex, "Str")
@@ -112,7 +119,7 @@ EverythingResultEnumeratorNext(ByRef path,ByRef name){
 	EverythingResultIndex++
 	return true
 }
-EverythingSearchEngine_OnExit(){
+EverythingSearch_OnExit(){
 	global EverythingDll,EverythingMod
 	DllCall(EverythingDll . "\Everything_Reset")
 	DllCall("FreeLibrary", "Ptr", EverythingMod)	
