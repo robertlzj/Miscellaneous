@@ -1,5 +1,6 @@
 ﻿#SingleInstance,Force
 #NoEnv
+#Include HotKey_WhenEditInSciTE.ahk
 if(not A_IsAdmin){
 	;	see A_IsAdmin / Operating System and User Info / Built-in Variables / Variables and Expressions
 	;	see Run as Administrator / Run[Wait]
@@ -174,10 +175,12 @@ ShellGetSelected(){
 !x::Send {Enter}	;use current file name
 
 ;----debug/test----
-#IfWinActive ReferLink.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
-F3::
-	Send ^s
-	Reload
-	return
-F2::ExitApp
+/* 
+	#IfWinActive ReferLink.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
+	F3::
+		Send ^s
+		Reload
+		return
+	F2::ExitApp
+ */
 #IfWinActive

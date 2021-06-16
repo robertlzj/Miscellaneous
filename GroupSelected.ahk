@@ -1,5 +1,6 @@
 #SingleInstance,Force
 #NoEnv
+#Include HotKey_WhenEditInSciTE.ahk
 Menu, Tray, Icon, SG.ico
 TrayTip, %A_ScriptName%, Launch,,16
 #Include SelectOrReadSelection.ahk
@@ -39,10 +40,12 @@ return
 	}
 	return
 #If, Condition()
-#IfWinActive GroupSelected.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-F3::Reload
-F2::ExitApp
-#IfWinActive
+/* 
+	#IfWinActive GroupSelected.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+	F3::Reload
+	F2::ExitApp
+	#IfWinActive
+ */
 #If
 Condition(){
 	global condition

@@ -1,4 +1,5 @@
 ﻿#SingleInstance Force
+#Include HotKey_WhenEditInSciTE.ahk
 Menu, Tray, Tip, #Z to Show menu`nactivate item with + to move Top after pin`, ^/Caps to Pin.
 ;	shortcut ^(number) wont work
 ;		^(word), !(number), !(word), Caps+(number), Caps+(word) works.
@@ -266,9 +267,10 @@ ConstructMenu(menuStruct){
 			Menu, MyMenu, Check, % MenuItemName
 	}
 }
-
-#If WinActive("PopupMenu.ahk ahk_exe SciTE.exe")
-F3::Reload
-F2::ExitApp
-#If 
+/* 
+	#If WinActive("PopupMenu.ahk ahk_exe SciTE.exe")
+	F3::Reload
+	F2::ExitApp
+	#If 
+ */
 Skip_To_End:

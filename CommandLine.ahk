@@ -1,4 +1,5 @@
 ﻿#SingleInstance,Force
+#Include HotKey_WhenEditInSciTE.ahk
 
 ;(Solved) How to hide cmd window? - AutoHotkey Community
 ;   https://www.autohotkey.com/boards/viewtopic.php?t=4075
@@ -69,8 +70,8 @@ HandleSpaceInPath(path){
 
 ;----debug/test----
 #IfWinActive CommandLine.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
-F3::Reload
-F2::ExitApp
+;~ F3::Reload
+;~ F2::ExitApp
 F4::
 	MsgBox % "Is Admin: `n`tGet from A_IsAdmin: " (A_IsAdmin?"true":"false")
 	. "`n`tTest by command line from WScript: " (IsAdmin_TestByWScriptCommand()?"true":"false")

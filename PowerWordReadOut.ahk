@@ -1,6 +1,7 @@
 #SingleInstance,Force
 #NoEnv
 #Include dataFromToClipboard.ahk
+#Include HotKey_WhenEditInSciTE.ahk
 Menu, Tray, Icon, PowerWord.ico
 ;~ CoordMode, Mouse, Screen
 ;~ CoordMode, Pixel, Screen
@@ -59,9 +60,11 @@ RAlt::
 	 */
 	MouseMove MouseX_original, MouseY_original
 	return
-#IfWinActive PowerWordReadOut.ahk ahk_exe SciTE.exe
-F3::Reload
-F2::ExitApp
+	/* 
+		#IfWinActive PowerWordReadOut.ahk ahk_exe SciTE.exe
+		F3::Reload
+		F2::ExitApp
+	*/
 SearchIcon(X_offset:=0, Y_offset:=0){
 	global
 	local OutputVarX

@@ -1,18 +1,40 @@
 ﻿#NoEnv
 #SingleInstance,Force
 #Include dataFromToClipboard.ahk
+#Include HotKey_WhenEditInSciTE.ahk
+
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
 
-#IfWinActive fragmentShortcut.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+#IfWinActive ahk_class SciTEWindow ahk_exe SciTE.exe
 $F1::
-	Send ^s
-	Reload
+	WinGet, OutputVar, ID ,AutoHotkey Help ahk_class HH Parent
+	;	ahk_exe SciTE.exe ahk_exe hh.exe
+	if OutputVar{
+		;	WinActivate	;last found
+		;	wont work
+		dataFromToClipboard:=dataFromToClipboard()
+		WinActivate	ahk_id %OutputVar%
+		WinWaitActive
+		Send !2^a
+		dataFromToClipboard(dataFromToClipboard)
+	}else
+		Send {F1}
 	return
-$F2::ExitApp
-
-#IfWinActive ahk_class #32770 ahk_exe AutoHotkey.exe, 否(&N)
+/* 
+	#IfWinActive fragmentShortcut.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+	$F3::
+		Send ^s
+		Reload
+		return
+	$F2::ExitApp
+ */
+#IfWinActive ahk_class #32770, 否(&N)
+;~ #IfWinActive ahk_class #32770 ahk_exe AutoHotkey, 否(&N)
+;	not work
+;~ #IfWinActive ahk_class #32770 ahk_exe AutoHotkey.exe, 否(&N)
+;~ #IfWinActive ahk_class #32770 ahk_exe AutoHotkeyU32.exe, 否(&N)
 Esc::!n
 
 #IfWinActive ahk_class PotPlayer64 ahk_exe PotPlayerMini64.exe

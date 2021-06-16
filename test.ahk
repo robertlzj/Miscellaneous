@@ -1,7 +1,8 @@
 ﻿#NoEnv
 #SingleInstance,Force
+#Include HotKey_WhenEditInSciTE.ahk
 
-o:={}
+MsgBox 123
 
 return
 
@@ -42,9 +43,9 @@ if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
 }
 #IfWinActive ahk_exe EXCEL.EXE
 NumpadDot::Tab
-#If WinActive("test.ahk ahk_exe SciTE.exe")
-F2::ExitApp
-F3::Reload
+;~ #If WinActive("test.ahk ahk_exe SciTE.exe")
+;~ F2::ExitApp
+;~ F3::Reload
 /* 
 	MsgBox % previousFilePath:=RegExReplace("a\b\ab`na\b\aab`na\b\abb`na\b\ab\a`na\b\ab","m`n)(?<=[/\\])\Q" . "ab" . "\E$","c") ", " ErrorLevel 
  */

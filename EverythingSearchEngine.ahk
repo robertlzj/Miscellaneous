@@ -1,5 +1,6 @@
 #NoEnv
 #SingleInstance, Force
+#Include HotKey_WhenEditInSciTE.ahk
 ;See
 ;	https://www.autohotkey.com/boards/viewtopic.php?t=67868
 ;	https://www.autohotkey.com/boards/viewtopic.php?t=25063#p118613
@@ -56,12 +57,13 @@ If (A_ScriptFullPath=A_LineFile){ ;test
 			}
 		}
 	}
-	#IfWinActive EverythingSearchEngine.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-	$F3::
-		Send ^s
-		Reload
-		return
-	$F2::ExitApp
+	/* 
+		#IfWinActive EverythingSearchEngine.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+		$F3::
+			Send ^s
+			Reload
+		$F2::ExitApp
+	 */
 }
 
 Search(search){

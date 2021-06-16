@@ -1,5 +1,6 @@
 #SingleInstance,Force
 #NoEnv
+#Include HotKey_WhenEditInSciTE.ahk
 Length:=0
 Menu, Tray, Icon, EditFileName.ico
 Menu, Tray, Tip, in explorer F2 to switch select section`nin editor F1 reload/F2 exit
@@ -37,7 +38,9 @@ Rename(){
 	;	Edit1 may be path in address bar, then Edit2 is file name
 	;		test in explorer on "C:\Users\RobertLin\Documents"
 }
-#IfWinActive EditFileName.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-F3::Reload
-F2::ExitApp
-#IfWinActive
+/* 
+	#IfWinActive EditFileName.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
+	F3::Reload
+	F2::ExitApp
+	#IfWinActive
+ */
