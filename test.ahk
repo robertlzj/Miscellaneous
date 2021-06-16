@@ -2,11 +2,36 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
-MsgBox 123
+if(shortExecute){
+	a:=false && b:=true
+	MsgBox % a "," b	;0,
+}
+if(CaseSensitive){
+	MsgBox % "Aa"="aA"	;true
+}
+if(objectEnum_Next){
+;	see EverythingSearchEngine.ahk
+	o:={_NewEnum:"Enumerator"}
+	r:=""
+	for k,v in o
+		r.=k
+	MsgBox % r
+	Enumerator(){
+		global state:=0
+		return {Next:"Next"}
+	}
+	Next(ByRef k,ByRef v){
+		global state
+		state++
+		k:=v:=state
+		if(state<3)
+			return true
+	}
+	;	Next(o,ByRef k,ByRef v)
+	;		wont invoke
+}
 
 return
-
-MsgBox % "Aa"="aA"
 
 if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
 	;	see https://www.cnblogs.com/RobertL/p/14818503.html
