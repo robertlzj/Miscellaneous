@@ -7,6 +7,8 @@
 #Include HotKey_WhenEditInSciTE.ahk
 #Include EverythingSearch.ahk
 ;	Search()
+#Include ReferLink.ahk
+;	GetAllEntraces()
 /* 
 	#IfWinActive DelFileWithLink.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
 	$F3::
@@ -27,8 +29,7 @@ $Del::	;del file(s), handle hard link entrance.
 	selectfiles:=Explorer_GetSelected()
 	if not selectfiles
 		return
-	pathsToDelete:=path:=targetPath:=""
-	symlinks:={}
+	pathsToDelete:=path:=targetPath:=symlinks:=""
 	Loop, Parse, % selectfiles,`n, `r
 		if (path:=folder A_LoopField) && hardLinks:=GetHardLinks(path){
 			single:=hardLinks.Count()=1
@@ -44,20 +45,49 @@ $Del::	;del file(s), handle hard link entrance.
 				pathsToDelete.=entrances
 			IfMsgBox, Cancel
 				Exit
-		}else if(targetPath:=GetAbsoluteTarget(path)){	;symlink entrance
-			symlinks[path]:=targetPath
-			symlinks.Push(path)
-		}else{	;check if is symlink source (refer)
-			if not RegExMatch(A_LoopField,"O)(.+?)(?=，|.|$)",match)
+		}else if(not (tartgetPath:=GetAbsoluteTarget(path))){	;check symlink target / entrance
+			if(entrances:=GetAllEntraces(path)){	;then is symlink destination
+				MsgBox , % 0x3|0x20,,Path "%path%" is link target.`nYes to Remove all entrance`, No to keep symlinks (brokean)?
+				;	0x3: Yes/No/Cancel
+				;	0x20:	Icon Question
+				IfMsgBox, Cancel
+					Exit
+				IfMsgBox, Yes
+				{
+					for entrance in entrances
+						symlinks.="`n" entrance
+					MsgBox, % 0x1|0x20,,Confirm symlinks to be delete.%symlinks%
+					;	0x1: OK/Cancel
+					;	0x20:	Icon Question
+					IfMsgBox, Cancel
+						Exit
+					pathsToDelete.=symlinks
+				}
+			}
+		}else{	;is entrance which have tartgetPath
+			if not (RegExMatch(targetPath,"O).+\\(.+?)(?=，|\.|$)",match))
 				throw "should always find id."	;expect name like "，"
-			id:=match[1]
-			;~ if StrLen(id)<6
-				;~ continue
-			if not found:=Search("regex:""(?>，|^)" id "(?=，|.|$)"" attrib:L")
-				;	L: Reparse point
-				;	FILE_ATTRIBUTE_REPARSE_POINT
-				;		https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-				continue
+			targetPath_id:=match[1]
+			if not (RegExMatch(A_LoopField,"O)(.+?)(?=，).*?(?<=，)\Q" targetPath_id "\E(?=，|\.|$)",match))
+				;	alias ， id
+				throw "should always find id."	;expect name like "，"
+			path_id:=match[1]
+			if(path_id!=targetPath_id){	;is sub entrance
+				MsgBox, % 0x3|0x20,,Path "%path%" has alias id "%path_id%".`nYes to Remove all sub entrance`, No to keep symlinks (brokean)?
+				;	0x3: Yes/No/Cancel
+				;	0x20:	Icon Question
+				IfMsgBox, Cancel
+					Exit
+				IfMsgBox, Yes
+				{
+					entrances:=GetAllEntraces(path,folder)
+					for entrance in entrances
+						symlinks.="`n" entrance
+					Loop, Parse, symlinks, `n
+						if(A_LoopField~=("\Q" folder "\E" ))
+				}
+			}
+		}
 			removeSymlink:=""
 			for path_relate in found
 				if(path=GetAbsoluteTarget(path_relate))
