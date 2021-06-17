@@ -102,3 +102,6 @@ GetAbsoluteTarget(path){
 	target := objFolder.GetDetailsOf(objFolderItem, 203)
 	return target
 }
+GetDirectTarget(path){
+	return GetAbsoluteTarget(path)
+}
