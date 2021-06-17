@@ -2,6 +2,41 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
+if(ErrorByRefWithDefaultWontPassParameter){
+	;	recursive ByRef with empty/default input wont pass correct parameter
+	;	https://www.autohotkey.com/boards/viewtopic.php?f=14&t=91727
+	f(ByRef p:=""){
+		if not p	;endless loop
+			p:=0
+		if(p++<2)
+			f(p)
+		return p
+	}
+	MsgBox % f()
+}
+if(RecursiveInvokeWithByRef){
+	/* 
+	f(ByRef o){
+		FileAppend, % o.f, *
+		if(o.f++<2)
+			f(o)
+	}
+	g(ByRef o:=""){
+		o:={f:0}
+		f(o)
+	}
+	if(BothWorkCorrectly)
+		g()
+	else
+		f(o)
+	*/
+}
+if(IndentAndFold){
+	{
+		a:=1
+	}	b:=2
+	MsgBox % a ", " b
+}
 if(shortExecute){
 	a:=false && b:=true
 	MsgBox % a "," b	;0,
