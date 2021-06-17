@@ -2,6 +2,13 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
+if(AssignWithinCommaInRuntime)
+	MsgBox % Max(a:=1,b:=a+1)	;2
+if(CouldConcateWithComma){
+	if(true)
+		a:=1,b:=2
+	MsgBox % a ", " b
+}
 if(ErrorByRefWithDefaultWontPassParameter){
 	;	recursive ByRef with empty/default input wont pass correct parameter
 	;	https://www.autohotkey.com/boards/viewtopic.php?f=14&t=91727
