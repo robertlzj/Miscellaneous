@@ -12,3 +12,4 @@ SciTE_Edit_Reload:
 SciTE_Edit_Exit:
 	ExitApp
 SciTE_Edit_End:
+_:=_
