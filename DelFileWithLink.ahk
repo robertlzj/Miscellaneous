@@ -45,83 +45,24 @@ $Del::	;del file(s), handle hard link entrance.
 				pathsToDelete.=entrances
 			IfMsgBox, Cancel
 				Exit
-		}else if(not (tartgetPath:=GetAbsoluteTarget(path))){	;check symlink target / entrance
-			if(entrances:=GetAllEntraces(path)){	;then is symlink destination
-				MsgBox , % 0x3|0x20,,Path "%path%" is link target.`nYes to Remove all entrance`, No to keep symlinks (brokean)?
-				;	0x3: Yes/No/Cancel
-				;	0x20:	Icon Question
-				IfMsgBox, Cancel
-					Exit
-				IfMsgBox, Yes
-				{
-					for entrance in entrances
-						symlinks.="`n" entrance
-					MsgBox, % 0x1|0x20,,Confirm symlinks to be delete.%symlinks%
-					;	0x1: OK/Cancel
-					;	0x20:	Icon Question
-					IfMsgBox, Cancel
-						Exit
-					pathsToDelete.=symlinks
-				}
-			}
-		}else{	;is entrance which have tartgetPath
-			if not (RegExMatch(targetPath,"O).+\\(.+?)(?=，|\.|$)",match))
-				throw "should always find id."	;expect name like "，"
-			targetPath_id:=match[1]
-			if not (RegExMatch(A_LoopField,"O)(.+?)(?=，).*?(?<=，)\Q" targetPath_id "\E(?=，|\.|$)",match))
-				;	alias ， id
-				throw "should always find id."	;expect name like "，"
-			path_id:=match[1]
-			if(path_id!=targetPath_id){	;is sub entrance
-				MsgBox, % 0x3|0x20,,Path "%path%" has alias id "%path_id%".`nYes to Remove all sub entrance`, No to keep symlinks (brokean)?
-				;	0x3: Yes/No/Cancel
-				;	0x20:	Icon Question
-				IfMsgBox, Cancel
-					Exit
-				IfMsgBox, Yes
-				{
-					entrances:=GetAllEntraces(path,folder)
-					for entrance in entrances
-						symlinks.="`n" entrance
-					Loop, Parse, symlinks, `n
-						if(A_LoopField~=("\Q" folder "\E" ))
-				}
-			}
-		}
-			removeSymlink:=""
-			for path_relate in found
-				if(path=GetAbsoluteTarget(path_relate))
-					if(not removeSymlink){
-						MsgBox , % 0x3|0x20,,File "%A_LoopField%" is link target (such from "%path%").`nYes to Remove all`, No to keep symlinks (brokean)?
-						;	0x3: Yes/No/Cancel
-						;	0x20:	Icon Question
-						IfMsgBox, Cancel
-							Exit
-						IfMsgBox, No
-							break
-						removeSymlink:=path_relate
-					}else ;remove all
-						removeSymlink.="`n" path_relate
-			if(removeSymlink){
-				MsgBox, % 0x1|0x20,,Confirm to remove all?`nlink target: "%A_LoopField%" `nsymlink:`n%removeSymlink%
+		}else if(entrances:=GetAllEntraces(path)){	;check if selection is source (destination) of symlink
+			MsgBox , % 0x3|0x20,,Path "%path%" is link target.`nYes to Remove all entrance (there is another comfirm)`nNo to keep symlinks (brokean)?
+			;	0x3: Yes/No/Cancel
+			;	0x20:	Icon Question
+			IfMsgBox, Cancel
+				Exit
+			IfMsgBox, Yes
+			{
+				Loop % entrances.Length()
+					symlinks.="`n" (entrance:=entrances[A_Index])
+				MsgBox, % 0x1|0x20,,Confirm symlinks to be delete.%symlinks%
 				;	0x1: OK/Cancel
+				;	0x20:	Icon Question
 				IfMsgBox, Cancel
 					Exit
+				pathsToDelete.=symlinks
 			}
 		}
-	if(symlinks.Count()>0){
-		path_targets:=""
-		while(path:=symlinks.RemoveAt(1)){
-			targetPath:=symlinks[path]
-			path_targets.="`n""" path """->""" targetPath """"
-		}
-		path_targets:=RTrim(path_targets,"`n")
-		MsgBox, % 0x1|0x20,,There are symlinks.`nContinue?%path_targets%
-		;	0x1: OK/Cancel
-		;	0x20:	Icon Question
-		IfMsgBox, Cancel
-			Exit
-	}
 	WinActivate, ahk_id %explorer%
 	WinWaitActive
 	Send %modifer%{Del}
