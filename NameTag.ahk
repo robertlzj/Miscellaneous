@@ -36,7 +36,7 @@
 			windowEnable:=windowsEnable[whnd]
 			if windowEnable{
 				Menu, Tray, Icon, Rn(R).ico
-				TrayTip("Name Tag","Continue",16)
+				TrayTip("Continue","Name Tag",16)
 				SoundPlay,*-1	;success
 			}
 		}
@@ -69,13 +69,13 @@ condition(){
 	if windowEnable{
 		Menu, Tray, Icon, Rn(R).ico
 		;~ TrayTip,Name Tag, Start,,16
-		TrayTip("Name Tag","Start",16)
+		TrayTip("Start","Name Tag",16)
 		;~ SoundPlay,*64	;info
 		SoundPlay,*-1	;success
 	}else{
 		Menu, Tray, Icon, Rn(B).ico
 		;~ TrayTip,Name Tag, Stop,,16
-		TrayTip("Name Tag","Stop",16)
+		TrayTip("Stop","Name Tag",16)
 		;~ SoundPlay,*48	;Exclamation
 		SoundPlay,*16	;remove
 	}
@@ -204,7 +204,7 @@ handle:	;edit file name
 	if activateFileCount
 		text.="`n Activate " activateFileCount "file(s)"
 	;~ TrayTip,Name Tag, % text,,16
-	TrayTip("Name Tag",text,16)
+	TrayTip(text,"Name Tag",16)
 	active:=true
 	SoundPlay % (activateFileCount or mode="add" or mode="activate")?"*-1":"*16"
 	return
