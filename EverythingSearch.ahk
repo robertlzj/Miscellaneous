@@ -33,16 +33,9 @@ IsFileMethod:="RequestAttribute"
 	;initial state see: Everything_Reset
 	;	https://www.voidtools.com/support/everything/sdk/everything_reset/
 	
-	if(IsFileMethod="RequestAttribute"){
-		EVERYTHING_REQUEST_FILE_NAME:=0x00000001
-		EVERYTHING_REQUEST_PATH:=0x00000002
-		EVERYTHING_REQUEST_ATTRIBUTES:=0x00000100
-		DllCall(EverythingDll . "\Everything_SetRequestFlags", "UInt"
-		;	https://www.voidtools.com/support/everything/sdk/everything_setrequestflags/
-			, EVERYTHING_REQUEST_FILE_NAME
-			|EVERYTHING_REQUEST_PATH
-			|EVERYTHING_REQUEST_ATTRIBUTES)
-	}
+	;	;if(IsFileMethod="RequestAttribute")
+	;	;	EverythingSearch_SetRequestFlags(true)
+	;	useless, will slow the process, not affect search with atrribs. handle it in Search()
 	
 	OnExit("EverythingSearch_OnExit")
 ;}
@@ -79,10 +72,29 @@ Search(search){
 	global EverythingDll,IsFileMethod,EverythingResult,EverythingSearch_ResultCount
 	DllCall(EverythingDll . "\Everything_SetSearch", "Str", search)
 	;	fast when default (query mode 1)
+	
+	;	;EverythingSearch_SetRequestFlags(false)
+	;	turn off it, only effact result list, but still can query attributes when search (which may slow).
+	;	;EverythingSearch_GetRequestFlags()
+	;	correct
 	if not DllCall(EverythingDll . "\Everything_Query", "Int", True)
 		throw "Failed."
 	;~ DllCall(EverythingDll . "\Everything_SetRegex", "Int", enableRegex)
 	EverythingSearch_ResultCount:=DllCall(EverythingDll . "\Everything_GetNumResults", "UInt")
+	;	;if(EverythingSearch_ResultCount>10000){
+	;	;	MsgBox Abort.`nToo many results (%EverythingSearch_ResultCount%) to retrieve attributes.
+	;	;	return
+	;	; }
+	;	should check result count by user before complex search
+	
+	;	;EverythingSearch_SetRequestFlags(true)
+	;	;EverythingSearch_GetRequestFlags()
+	;	should correct
+	
+	;	;DllCall(EverythingDll . "\Everything_Query", "Int", True)
+	;	;EverythingSearch_ResultCount:=DllCall(EverythingDll . "\Everything_GetNumResults", "UInt")
+	;	see above
+	
 	if not EverythingSearch_ResultCount
 		return
 	return EverythingResult
@@ -123,4 +135,18 @@ EverythingSearch_OnExit(){
 	global EverythingDll,EverythingMod
 	DllCall(EverythingDll . "\Everything_Reset")
 	DllCall("FreeLibrary", "Ptr", EverythingMod)	
+}
+
+EverythingSearch_GetRequestFlags(){
+	global EverythingDll
+	MsgBox % DllCall(EverythingDll . "\Everything_GetResultListRequestFlags", "UInt")
+}
+EverythingSearch_SetRequestFlags(attribute:=false){
+	global EverythingDll
+	static EVERYTHING_REQUEST_FILE_NAME:=0x00000001,EVERYTHING_REQUEST_PATH:=0x00000002,EVERYTHING_REQUEST_ATTRIBUTES:=0x00000100
+	DllCall(EverythingDll . "\Everything_SetRequestFlags", "UInt"
+	;	https://www.voidtools.com/support/everything/sdk/everything_setrequestflags/
+		, EVERYTHING_REQUEST_FILE_NAME
+		|EVERYTHING_REQUEST_PATH
+		|(attribute?EVERYTHING_REQUEST_ATTRIBUTES:0))
 }
