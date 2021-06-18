@@ -2,6 +2,18 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
+if(SoundPlay){
+	SoundPlay,*-1	;success
+	Input, _, L1
+	SoundPlay,*16	;Hand (stop/error)
+	Input, _, L1
+	SoundPlay,*32	;Question	no effect
+	Input, _, L1
+	SoundPlay,*48	;Exclamation	same as success
+	Input, _, L1
+	SoundPlay,*64	;Asterisk (info)	same as success
+	Input, _, L1
+}
 if(AssignWithinCommaInRuntime)
 	MsgBox % Max(a:=1,b:=a+1)	;2
 if(CouldConcateWithComma){
