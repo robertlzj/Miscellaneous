@@ -1,6 +1,7 @@
 ﻿#SingleInstance,Force
 #NoEnv
 #Include HotKey_WhenEditInSciTE.ahk
+#Include TrayTip.ahk
 IsDebug:=A_ScriptFullPath=A_LineFile
 if IsDebug
 	SetBatchLines -1
@@ -22,25 +23,33 @@ Menu, Tray, Icon, ReferLink.ico
 ;	RunWaitOne, HandleSpaceInPath
 #Include EverythingSearch.ahk
 ;	Search
-getDataFunction:=""
+GetFileSelected:=""
 	;~ . "dataFromToClipboard"
 	. "ShellGetSelected"
 c:=""""
 e:=""
-#IfWinActive ahk_exe explorer.exe
-~^c::
-!c::
-!+c::
-!x::
-	data:=%getDataFunction%()
-	if not FileExist(data)	;or multiple files then
-		return
-	sourceFilePath:=data
+return
+#If previousFileSelected and WinActive("ahk_exe explorer.exe")
+~Esc::
+	SoundPlay,*16
+	gosub ResetSelectedRecord
+	return
+#If not A_CaretX and WinActive("ahk_exe explorer.exe")
+!c::	;switch between current select or final source of select as source for operation follow-up
+~^c::	;same as above but silent
+!x::	;{abstract file
+	/*	abandon
+		!c::	;get current then upstream (recursively) level as source when trigger continuously.
+		;modifier "+" get final target, or get upstream level target each time (recursive/iteratable)
+	*/ 
+	isSilent:=A_ThisHotkey~="~"	;~^c
+	gosub GetSourceFilePath
 	SplitPath, sourceFilePath , sourceFileName, sourceDirPath, sourceFileExtension, sourceFileNameWithoutExt
 	;	The final backslash is not included even if the file is located in a drive's root directory.
 	if(A_ThisHotkey="!x"){
-		targetFilePath:=GetDirectTarget(sourceFilePath)
-		if(not targetFilePath){
+		while(sourceMode!="Final")
+			gosub GetSourceFilePath
+		if(finalSource=fileSelected){
 			Default:=sourceFileNameWithoutExt
 			while true
 			{
@@ -105,19 +114,20 @@ e:=""
 			;~ MsgBox % sourceDirPath "\" referFileNameWithoutExt "." sourceFileExtension ;test
 			OpenAndSelect(sourceDirPath,referFileNameWithoutExt "." sourceFileExtension)
 		}else
-			referFilePath:=targetFilePath
+			referFilePath:=finalSource
 		targetFilePath:=e
-	}else{	;!+c / !c
+	}else{	;!c
 		referFilePath:=sourceFilePath
-		if(A_ThisHotkey="!c")
-			while(_:=GetDirectTarget(referFilePath))
-				referFilePath:=_
 	}
 	SplitPath, referFilePath , _referFileName, _referDirPath, referFileExtension, referFileNameWithoutExt
 	FileAppend, % "referFilePath: " referFilePath . "`n",*
 	referFilePathWithQuotation:=HandleSpaceInPath(referFilePath)
-	return
-Abort:
+	return	;}
+ResetSelectedRecord:	;{
+	previousFileSelected:=finalSource:=""
+	sourceMode:="Direct"
+	return	;}
+Abort:	;{
 	if moved{	;cancel / move back
 		;~ MsgBox,% referFilePath "`n" sourceFilePath	;test
 		FileMove,% referFilePath,% sourceFilePath
@@ -127,8 +137,8 @@ Abort:
 		moved:=false
 	}
 	referFilePath:=e
-	Exit
-!v::
+	Exit	;}
+!v::	;{
 	if not referFilePath
 		Exit
 	targetFolder:=Explorer_GetPath()
@@ -175,94 +185,173 @@ Abort:
 	;~ Send  {F2}
 	;~ Send  {F2}
 	;~ MsgBox %targetFolder%`n%targetFileName%
-	return
+	return	;}
+!z::	;{	search entrance
+	isSilent:=false
+	,previousOutput:=output:=""
+	gosub GetSourceFilePath
+SearchEntrance:
+	if(not output){
+		SplitPath, sourceFilePath , sourceFileName, sourceDirPath, sourceFileExtension, sourceFileNameWithoutExt
+		if(results:=GetAllEntraces2(sourceFilePath)){
+			target:=results.TargetPath
+			,length:=results.Length()
+			,ouputs:=""
+			Loop % length
+				ouputs.=results[A_Index] "`n"
+			RTrim(ouputs,"`n")
+			output=%sourceMode% Target path: %target%.`nIts %length% entrance:`n%ouputs%
+		}
+	}
+	MsgBox % output?output:"No entrance found."
+	return	;}
+#If not A_CaretX and WinActive("ReferLink.ahk ahk_class #32770")
 !z::
-	data:=%getDataFunction%()
-	if not FileExist(data)	;or multiple files then
-		return
-	sourceFilePath:=data
-	SplitPath, sourceFilePath , sourceFileName, sourceDirPath, sourceFileExtension, sourceFileNameWithoutExt
-	ouputs:=""
-	results:=GetAllEntraces(sourceFilePath)
-	target:=results.TargetPath
-	;~ for path in results
-	length:=results.Length()
-	Loop % length
-		ouputs.=results[A_Index] "`n"
-	if(ouputs){
-		RTrim(ouputs,"`n")
-		MsgBox Target path "%target%".`nAnd its %length% entrance:`n%ouputs%
-	}else
-		MsgBox No entrance found.
+	_:=previousOutput,previousOutput:=output,output:=_
+	Send {Enter}	;close MsgBox
+	gosub Toggle_Mode	
+	SetTimer, SearchEntrance, -1
 	return
-	
+#If
+GetSourceFilePath: ;{
+	fileSelected:=%GetFileSelected%()
+	if not FileExist(fileSelected)	;or multiple files then
+		return
+	if(previousFileSelected!=fileSelected)
+		gosub ResetSelectedRecord
+Toggle_Mode:
+	if(not previousFileSelected){
+		if not isSilent
+			SoundPlay,*-1
+		else
+			SoundPlay,Click.wav
+		sourceFilePath:=previousFileSelected:=fileSelected
+	}else if(previousFileSelected=fileSelected){
+		sourceMode:=sourceMode="Direct"?"Final":"Direct"
+		if(not finalSource and sourceMode="Final"){
+			finalSource:=fileSelected
+			while(_:=GetDirectTarget(finalSource))
+				finalSource:=_
+		}
+		SoundPlay,% sourceMode="Final"?"ClickDouble.wav":"Click.wav"
+	}else throw "Should not execute here."
+	sourceFilePath:=sourceMode="Direct"?fileSelected:finalSource
+	if(not isSilent)	;~^c,	Silent
+		TrayTip(sourceMode " Source:`n" sourceFilePath,0x10)
+		;	0x10: Do not play the notification sound.
+	return
+;}
+
 ShellGetSelected(){
 	folder:=Explorer_GetPath()
 	file:=Explorer_GetSelected()
 	return folder . file
 }
-GetAllEntraces_Core(id,targetPath,sepcifyFolder:="",ByRef results:=""){
-	aliases:=[]
-	if(not results["_" id]){
-		results["_" id]:=true
-		FileAppend, Handle id: %id%`, In folder %sepcifyFolder%, *
-		if(found:=Search(sepcifyFolder id " attrib:L"))
-			;	"_" id: avoid conflict with index
-			;	"regex:""(?>·|^)" id "(?=·|\.|$)"" attrib:L"
-			;		slow
-			;	FILE_ATTRIBUTE_REPARSE_POINT
-			;		https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
+;{GetAllEntraces
+	GetAllEntraces_Core2(id,results){
+		static Label_TargetPath:=0x1,Label_Recorded:=0x2
+		aliases:=[]
+		FileAppend, Handle id: %id%, *
+		results["_" id]:=Label_Recorded
+		if(found:=Search(id " attrib:L")){
 			for path_relate in found
-				if(not results[path_relate]){
-					results[path_relate]:=true
-					if(targetPath=GetDirectTarget(path_relate)){
-						FileAppend, Found path: %path_relate%, *
-						results.Push(path_relate)
-						if RegExMatch(path_relate,"O)(.+\\)(.+?)·" id "(?=·|.|$)",match){
-							sepcifyFolder:=match[1],id_alias:=match[2]
-							FileAppend, Found id_alias: %id_alias%, *
-							aliases.Push(id_alias),alias["_" id_alias]:=sepcifyFolder
-						}
+				if((_1:=results[targetPath:=GetDirectTarget(path_relate)])&Label_TargetPath
+					and not (_2:=results[path_relate])&Label_Recorded){
+					results[targetPath]:=(results[targetPath]?results[targetPath]:0)|Label_TargetPath
+					,results[path_relate]:=(results[path_relate]?results[path_relate]:0)|Label_Recorded|Label_TargetPath
+					,results.Push(path_relate)
+					FileAppend, Found path: %path_relate%, *
+					if RegExMatch(path_relate,"O).+\\(.+?)·" id "(?=·|.|$)",match){
+						id_alias:=match[1]
+						if(results["_" id_alias])	;Label_Recorded
+							throw "Duplicate id & its alias."
+						FileAppend, Found id_alias: %id_alias%, *
+						aliases.Push(id_alias)
 					}
 				}
-	}
-	if(length:=aliases.Length()>0){
-		FileAppend, Handle ailias id, *
-		;	for index,id_alias in aliases
-		;		GetAllEntraces_Core(id_alias,targetPath,sepcifyFolder,results)
-		;	change to:
-		Loop % length
-			GetAllEntraces_Core(id_alias:=aliases[A_Index],targetPath,sepcifyFolder:=aliases["_" id_alias],results)
-	}
-}
-GetAllEntraces(path,sepcifyFolder:="",results:=""){
-	;	could not use ByRef results
-	if(not FileExist(path))
-		throw """%path%"" not a path."
-	FileAppend, Handle path: %path%, *
-	{
-		if(not (targetPath:=GetDirectTarget(path)))
-			targetPath:=path
-		else if not FileExist(targetPath){
-			MsgBox % 0x1,, Warning, target path "%targetPath%" is invalid.`nContinue?
-			IfMsgBox, Cancel
-				Exit
 		}
+		if(length:=aliases.Length()>0){
+			FileAppend, Handle ailias id, *
+			Loop % length
+				GetAllEntraces_Core2(id_alias:=aliases[A_Index],results)
+		}
+	}
+	GetAllEntraces2(path){
+		static Label_TargetPath:=0x1
+		if(not FileExist(path))
+			throw """%path%"" not a path."
+		FileAppend, Handle path: %path%, *
 		if not RegExMatch(path,"O).+\\(.+?)(?=·|\.|$)",match)
 			throw "should always find a name(id)."	;expect name like "·"
 		id:=match[1]
-		FileAppend, It's id: %id%, *
-		if(not results)
-			results:={TargetPath:targetPath,(targetPath):true}
-			;	no "(1):targetPath" - handle it alone
-			;	("_" id):true, entrance_path:true, (index):entrance_path
-	}	GetAllEntraces_Core(id,targetPath,sepcifyFolder,results)
-	if(targetPath!=path){
-		FileAppend, Handle target path: %targetPath%, *
-		GetAllEntraces(targetPath,sepcifyFolder,results)
+		FileAppend, Its id: %id%, *
+		results:={TargetPath:path,(path):Label_TargetPath}
+		GetAllEntraces_Core2(id,results)
+		return results.Length()>0?results:false
 	}
-	return results.Count()>2?results:false
-}
+	GetAllEntraces_Core(id,targetPath,sepcifyFolder:="",ByRef results:=""){
+		aliases:=[]
+		if(not results["_" id]){
+			;	"_" id: avoid conflict with index
+			results["_" id]:=true
+			FileAppend, Handle id: %id%`, In folder %sepcifyFolder%, *
+			if(found:=Search(sepcifyFolder id " attrib:L"))
+				;	"regex:""(?>·|^)" id "(?=·|\.|$)"" attrib:L"
+				;		slow
+				;	FILE_ATTRIBUTE_REPARSE_POINT
+				;		https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
+				for path_relate in found
+					if(not results[path_relate]){
+						results[path_relate]:=true
+						if(targetPath=GetDirectTarget(path_relate)){
+							FileAppend, Found path: %path_relate%, *
+							results.Push(path_relate)
+							if RegExMatch(path_relate,"O)(.+\\)(.+?)·" id "(?=·|.|$)",match){
+								sepcifyFolder:=match[1],id_alias:=match[2]
+								FileAppend, Found id_alias: %id_alias%, *
+								aliases.Push(id_alias),aliases["_" id_alias]:=sepcifyFolder
+							}
+						}
+					}
+		}
+		if(length:=aliases.Length()>0){
+			FileAppend, Handle ailias id, *
+			;	for index,id_alias in aliases
+			;		GetAllEntraces_Core(id_alias,targetPath,sepcifyFolder,results)
+			;	change to:
+			Loop % length
+				GetAllEntraces_Core(id_alias:=aliases[A_Index],targetPath,sepcifyFolder:=aliases["_" id_alias],results)
+		}
+	}
+	GetAllEntraces(path,sepcifyFolder:="",results:=""){
+		;	could not use ByRef results
+		if(not FileExist(path))
+			throw """%path%"" not a path."
+		FileAppend, Handle path: %path%, *
+		{
+			if(not (targetPath:=GetDirectTarget(path)))
+				targetPath:=path
+			else if not FileExist(targetPath){
+				MsgBox % 0x1,, Warning, target path "%targetPath%" is invalid.`nContinue?
+				IfMsgBox, Cancel
+					Exit
+			}
+			if not RegExMatch(path,"O).+\\(.+?)(?=·|\.|$)",match)
+				throw "should always find a name(id)."	;expect name like "·"
+			id:=match[1]
+			FileAppend, It's id: %id%, *
+			if(not results)
+				results:={TargetPath:targetPath,(targetPath):true}
+				;	no "(1):targetPath" - handle it alone
+				;	("_" id):true, entrance_path:true, (index):entrance_path
+		}	GetAllEntraces_Core(id,targetPath,sepcifyFolder,results)
+		if(targetPath!=path){
+			FileAppend, Handle target path: %targetPath%, *
+			GetAllEntraces(targetPath,sepcifyFolder,results)
+		}
+		return results.Count()>2?results:false
+	}
+;}
 #IfWinActive ReferLink.ahk ahk_class #32770 ahk_exe AutoHotkey.exe	;Set Abstract Identifier
 !x::Send {Enter}	;use current file name
 
