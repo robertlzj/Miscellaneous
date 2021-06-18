@@ -2,6 +2,14 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
+
+Loop 3{
+	SoundPlay,ClickDouble.mp3,1
+	Sleep 1000
+	SoundPlay,ClickDouble2.mp3,1
+	Sleep 1000
+}
+ExitApp
 if(SoundPlay){
 	SoundPlay,*-1	;success
 	Input, _, L1
