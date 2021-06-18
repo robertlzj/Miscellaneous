@@ -29,7 +29,7 @@ GetFileSelected:=""
 c:=""""
 e:=""
 return
-#If previousFileSelected and WinActive("ahk_exe explorer.exe")
+#If previousFileSelected and not A_CaretX and WinActive("ahk_exe explorer.exe")
 ~Esc::
 	SoundPlay,*16
 	gosub ResetSelectedRecord
@@ -38,10 +38,6 @@ return
 !c::	;switch between current select or final source of select as source for operation follow-up
 ~^c::	;same as above but silent
 !x::	;{abstract file
-	/*	abandon
-		!c::	;get current then upstream (recursively) level as source when trigger continuously.
-		;modifier "+" get final target, or get upstream level target each time (recursive/iteratable)
-	*/ 
 	isSilent:=A_ThisHotkey~="~"	;~^c
 	gosub GetSourceFilePath
 	SplitPath, sourceFilePath , sourceFileName, sourceDirPath, sourceFileExtension, sourceFileNameWithoutExt
@@ -224,7 +220,7 @@ Toggle_Mode:
 		if not isSilent
 			SoundPlay,*-1
 		else
-			SoundPlay,Click.wav
+			SoundPlay,Click.mp3
 		sourceFilePath:=previousFileSelected:=fileSelected
 	}else if(previousFileSelected=fileSelected){
 		sourceMode:=sourceMode="Direct"?"Final":"Direct"
@@ -233,11 +229,11 @@ Toggle_Mode:
 			while(_:=GetDirectTarget(finalSource))
 				finalSource:=_
 		}
-		SoundPlay,% sourceMode="Final"?"ClickDouble.wav":"Click.wav"
+		SoundPlay,% sourceMode="Final"?"ClickDouble.mp3":"Click.mp3",1
 	}else throw "Should not execute here."
 	sourceFilePath:=sourceMode="Direct"?fileSelected:finalSource
 	if(not isSilent)	;~^c,	Silent
-		TrayTip(sourceMode " Source:`n" sourceFilePath,0x10)
+		TrayTip(sourceFilePath,sourceMode " Source:",0x10)
 		;	0x10: Do not play the notification sound.
 	return
 ;}
@@ -253,6 +249,10 @@ ShellGetSelected(){
 		aliases:=[]
 		FileAppend, Handle id: %id%, *
 		results["_" id]:=Label_Recorded
+		if((ResultCount:=(found:=Search(id)).Count())>10000){
+ 			MsgBox Abort.`nToo many results (%ResultCount%) to retrieve attributes.
+			return
+		}
 		if(found:=Search(id " attrib:L")){
 			for path_relate in found
 				if((_1:=results[targetPath:=GetDirectTarget(path_relate)])&Label_TargetPath
