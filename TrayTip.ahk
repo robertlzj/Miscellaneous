@@ -1,6 +1,8 @@
 TrayTip(text,title:="",options:=""){
 	;always hide previous one
 	;AutoHotkey Help \ TrayTip
+	if(options="" and (title+0=title))
+		options:=title,title:=""
 	if(toggle:=WinExist("ahk_exe PSTrayFactory.exe"))
 		;toggle then restore icon state
 		Suspend
@@ -8,6 +10,7 @@ TrayTip(text,title:="",options:=""){
 	Menu Tray, NoIcon
 	Sleep 200  ; It may be necessary to adjust this sleep.
 	Menu Tray, Icon
+	;~ Sleep 200
 	if toggle
 		Suspend
 	TrayTip % title?title:A_ScriptName,% text,,% options
@@ -17,7 +20,9 @@ TrayTip(text,title:="",options:=""){
 ;		TrayTip\s*,?\s*\([^,]*\),
 
 if(A_ScriptFullPath=A_LineFile){	;test
-	TrayTip(1,1)
+	TrayTip("Content 1","Title")
 	Sleep 2000
-	TrayTip(2)
+	TrayTip("Content 2",0x10)
+	Sleep 2000
+	TrayTip("Content 3")
 }
