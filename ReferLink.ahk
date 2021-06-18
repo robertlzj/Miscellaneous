@@ -193,7 +193,7 @@ Abort:	;{
 SearchEntrance:
 	if(not output){
 		SplitPath, sourceFilePath , sourceFileName, sourceDirPath, sourceFileExtension, sourceFileNameWithoutExt
-		if(results:=GetAllEntraces2(sourceFilePath)){
+		if(results:=GetAllEntraces(sourceFilePath)){
 			target:=results.TargetPath
 			,length:=results.Length()
 			,ouputs:=""
@@ -248,7 +248,7 @@ ShellGetSelected(){
 	return folder . file
 }
 ;{GetAllEntraces
-	GetAllEntraces_Core2(id,results){
+	GetAllEntraces_Core(id,results){
 		static Label_TargetPath:=0x1,Label_Recorded:=0x2
 		aliases:=[]
 		FileAppend, Handle id: %id%, *
@@ -273,10 +273,10 @@ ShellGetSelected(){
 		if(length:=aliases.Length()>0){
 			FileAppend, Handle ailias id, *
 			Loop % length
-				GetAllEntraces_Core2(id_alias:=aliases[A_Index],results)
+				GetAllEntraces_Core(id_alias:=aliases[A_Index],results)
 		}
 	}
-	GetAllEntraces2(path){
+	GetAllEntraces(path){
 		static Label_TargetPath:=0x1
 		if(not FileExist(path))
 			throw """%path%"" not a path."
@@ -286,70 +286,8 @@ ShellGetSelected(){
 		id:=match[1]
 		FileAppend, Its id: %id%, *
 		results:={TargetPath:path,(path):Label_TargetPath}
-		GetAllEntraces_Core2(id,results)
+		GetAllEntraces_Core(id,results)
 		return results.Length()>0?results:false
-	}
-	GetAllEntraces_Core(id,targetPath,sepcifyFolder:="",ByRef results:=""){
-		aliases:=[]
-		if(not results["_" id]){
-			;	"_" id: avoid conflict with index
-			results["_" id]:=true
-			FileAppend, Handle id: %id%`, In folder %sepcifyFolder%, *
-			if(found:=Search(sepcifyFolder id " attrib:L"))
-				;	"regex:""(?>·|^)" id "(?=·|\.|$)"" attrib:L"
-				;		slow
-				;	FILE_ATTRIBUTE_REPARSE_POINT
-				;		https://docs.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants
-				for path_relate in found
-					if(not results[path_relate]){
-						results[path_relate]:=true
-						if(targetPath=GetDirectTarget(path_relate)){
-							FileAppend, Found path: %path_relate%, *
-							results.Push(path_relate)
-							if RegExMatch(path_relate,"O)(.+\\)(.+?)·" id "(?=·|.|$)",match){
-								sepcifyFolder:=match[1],id_alias:=match[2]
-								FileAppend, Found id_alias: %id_alias%, *
-								aliases.Push(id_alias),aliases["_" id_alias]:=sepcifyFolder
-							}
-						}
-					}
-		}
-		if(length:=aliases.Length()>0){
-			FileAppend, Handle ailias id, *
-			;	for index,id_alias in aliases
-			;		GetAllEntraces_Core(id_alias,targetPath,sepcifyFolder,results)
-			;	change to:
-			Loop % length
-				GetAllEntraces_Core(id_alias:=aliases[A_Index],targetPath,sepcifyFolder:=aliases["_" id_alias],results)
-		}
-	}
-	GetAllEntraces(path,sepcifyFolder:="",results:=""){
-		;	could not use ByRef results
-		if(not FileExist(path))
-			throw """%path%"" not a path."
-		FileAppend, Handle path: %path%, *
-		{
-			if(not (targetPath:=GetDirectTarget(path)))
-				targetPath:=path
-			else if not FileExist(targetPath){
-				MsgBox % 0x1,, Warning, target path "%targetPath%" is invalid.`nContinue?
-				IfMsgBox, Cancel
-					Exit
-			}
-			if not RegExMatch(path,"O).+\\(.+?)(?=·|\.|$)",match)
-				throw "should always find a name(id)."	;expect name like "·"
-			id:=match[1]
-			FileAppend, It's id: %id%, *
-			if(not results)
-				results:={TargetPath:targetPath,(targetPath):true}
-				;	no "(1):targetPath" - handle it alone
-				;	("_" id):true, entrance_path:true, (index):entrance_path
-		}	GetAllEntraces_Core(id,targetPath,sepcifyFolder,results)
-		if(targetPath!=path){
-			FileAppend, Handle target path: %targetPath%, *
-			GetAllEntraces(targetPath,sepcifyFolder,results)
-		}
-		return results.Count()>2?results:false
 	}
 ;}
 #IfWinActive ReferLink.ahk ahk_class #32770 ahk_exe AutoHotkey.exe	;Set Abstract Identifier
