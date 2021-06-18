@@ -205,14 +205,14 @@ SearchEntrance:
 	}
 	MsgBox % output?output:"No entrance found."
 	return	;}
-#If not A_CaretX and WinActive("ReferLink.ahk ahk_class #32770")
+#If not A_CaretX and WinActive("ReferLink.ahk ahk_class #32770")	;{
 !z::
 	_:=previousOutput,previousOutput:=output,output:=_
 	Send {Enter}	;close MsgBox
 	gosub Toggle_Mode	
 	SetTimer, SearchEntrance, -1
 	return
-#If
+#If	;}
 GetSourceFilePath: ;{
 	fileSelected:=%GetFileSelected%()
 	if not FileExist(fileSelected)	;or multiple files then
