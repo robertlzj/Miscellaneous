@@ -2,10 +2,13 @@
 #SingleInstance,Force
 #Include dataFromToClipboard.ahk
 #Include HotKey_WhenEditInSciTE.ahk
+#Include DelFileWithLink.ahk
+;	DelFileWithLink_ExternalTrigger
 
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
+goto fragmentShortcut_End
 
 #IfWinActive ahk_class SciTEWindow ahk_exe SciTE.exe
 $F1::
@@ -40,17 +43,41 @@ $F1::
 ;~ #IfWinActive ahk_class #32770 ahk_exe AutoHotkeyU32.exe, 否(&N)
 Esc::!n
 
-#IfWinActive ahk_class PotPlayer64 ahk_exe PotPlayerMini64.exe
-	$Del::Send +{Del}	;by default, del only apply to playlistS
-#IfWinActive 删除文件 ahk_class #32770 ahk_exe PotPlayerMini64.exe
-	$Shift::
-	$Delete::
-		Send {Enter}
-		return
-	;	+Delete: in PotPlayer, delete file, prompt dialog whether to delete (to recycle bin)
+#IfWinActive, 删除 ahk_class #32770, 确实要	;{
+;	"删除文件" / "删除多个项目"
+;	"确实要把此文件放入回收站吗?" / "确实要永久性地删除此文件吗?" / "确实要将这 X 项移动到回收站吗?" / "确实要永久删除这 X 项吗?"
+$Delete::Send {Enter}	;}
 
-#If
-~^+a::	;QQ screen capture
+#IfWinActive	ahk_exe PotPlayerMini64.exe	;{
+#IfWinActive ahk_class PotPlayer64 ahk_exe PotPlayerMini64.exe
+	$Del::
+	$+Del::
+		Send +{Del}	;by default, del only apply to playlists
+		WinWaitActive,删除 ahk_class #32770, 确实要
+		gosub DelFileWithLink_ExternalTrigger
+		return
+	;	#IfWinActive 删除文件 ahk_class #32770 ahk_exe PotPlayerMini64.exe
+	;		$Shift::
+	;		$Delete::
+	;			Send {Enter}
+	;			return
+	;		;	+Delete: in PotPlayer, delete file, prompt dialog whether to delete (to recycle bin)
+	;Abstract.
+	;	see "#IfWinActive, 删除 ahk_class #32770, 确实要“
+#IfWinActive fragmentShortcut.ahk ahk_class #32770 ahk_exe AutoHotkey.exe, delete all entrance?
+	$Del::Send !y
+	~Esc::
+		WinWaitNotActive
+		WinActivate 删除 ahk_class #32770, 确实要
+		WinWaitActive,A,,0.5
+		if ErrorLevel
+			throw "WinWaitActive failed."
+		Send {Esc}
+		return
+;}
+
+#If	;QQ screen capture	;{
+~^+a::	;{
 	OutputDebug, QQ screen capture Lunch
 	WinWaitActive ahk_class TXGuiFoundation,,0.5
 	if ErrorLevel
@@ -62,9 +89,9 @@ Esc::!n
 	;	if(not ErrorLevel){	;1 not found, 2 error
 	;		MouseMove, OutputVarX, OutputVarY
 	;	}
-	return
+	return	;}
 #If Capturing
-~LButton up::
+~LButton up::	;{
 	WinGetPos , X, Y, Width, Height, A
 	Sleep 100
 	OutputDebug, QQ screen capture X: %X%`, Y: %Y%`, Width: %Width%`, Height: %Height%
@@ -78,15 +105,16 @@ Esc::!n
 		OutputDebug, Found
 	}else
 		OutputDebug, Not found (%ErrorLevel%)
-	return
-
-#IfWinActive AutoHotkey Help ahk_class HH Parent ;ahk_exe SciTE.exe
+	return	;}
+;}
+#IfWinActive AutoHotkey Help ahk_class HH Parent ;ahk_exe SciTE.exe	;{
 ;	ahk_exe hh.exe
 !1::!c
 !2::Send !n^a
 !3::Send !s^a
+;}
 ;~ !`::
-#If WinActive("ahk_class XLMAIN ahk_exe EXCEL.EXE")
+#If WinActive("ahk_class XLMAIN ahk_exe EXCEL.EXE")	;{
 	;~ and (GetKeyState("Control") or GetKeyState("Alt"))
 	and ClassUnderMouse()="EXCEL61"
 ~^LButton::
@@ -94,9 +122,9 @@ Esc::!n
 ~^!LButton::
 	OutputDebug, % A_ThisHotkey
 	Enable:=true
-	return
-#If Enable
-~LButton up::
+	return	;}
+#If Enable	;{
+~LButton up::	;{
 	Enable:=false
 	OutputDebug, % A_ThisHotkey
 	if(A_PriorHotkey~="^~[!^]{1,2}LButton$" and A_TimeSincePriorHotkey>500){
@@ -106,25 +134,28 @@ Esc::!n
 		if A_PriorHotkey~="!"
 			Send ^i
 	}
-	return
+	return	;}
+;}
 ClassUnderMouse(){
 	MouseGetPos , OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
 	return OutputVarControl
 }
-#IfWinActive ahk_exe msedge.exe
+#IfWinActive ahk_exe msedge.exe	;{
 ~^d::	;favorite
 	WinWaitActive 编辑收藏夹
 ~!d::	;address bar
 	Send ^c{Esc}
 	return
-#IfWinActive ▶ ahk_exe msedge.exe
+;}
+#IfWinActive ▶ ahk_exe msedge.exe	;{
 RControl::
 #IfWinActive 网易云音乐 ahk_exe msedge.exe
-RControl::
+RControl::	;{
 	if (A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<500)
 		Send ^{Right}
 	Send p
-	return
+	return	;}
+;}
 #IfWinActive ahk_exe msedge.exe	;游览器
 +RControl::
 !r::
@@ -143,3 +174,6 @@ $d::
 		Click
 	return
 #If
+
+fragmentShortcut_End:
+_:=_
