@@ -46,6 +46,9 @@ Esc::!n
 #IfWinActive, 删除 ahk_class #32770, 确实要	;{
 ;	"删除文件" / "删除多个项目"
 ;	"确实要把此文件放入回收站吗?" / "确实要永久性地删除此文件吗?" / "确实要将这 X 项移动到回收站吗?" / "确实要永久删除这 X 项吗?"
+$Delete::Send {Enter}
+#IfWinActive, 删除快捷方式 ahk_class #32770,你确定
+;	"你确定要将此快捷方式移动到回收站吗?" / "你确定要永久删除此快捷方式吗?"
 $Delete::Send {Enter}	;}
 
 #IfWinActive	ahk_exe PotPlayerMini64.exe	;{
