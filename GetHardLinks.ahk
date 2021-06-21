@@ -10,6 +10,7 @@ GetHardLinks(path_init)
 {
 	static ERROR_MORE_DATA := 234
 	static MAX_PATH := 260
+	static Bytes_per_char := A_IsUnicode ? 2 : 1
 	
 	if (SubStr(path_init, 2, 2) != ":\")	; gotcha: 2 is the length, not the end
 		throw % "GetHardLinks(path) \ path (" path_init ") is not complete"
@@ -20,15 +21,22 @@ GetHardLinks(path_init)
 	paths := {}
 	
 	buflen := MAX_PATH
-	VarSetCapacity(linkname,buflen)
+	VarSetCapacity(linkname,buflen*Bytes_per_char)
+	;	the number of bytes that the variable should be able to hold after the adjustment
+	;	;try
 	handle := DllCall("FindFirstFileNameW"
 		,"WStr", path_init
 		,"UInt", 0
 		,"UInt*", buflen
+		;	in characters
 		,"WStr", linkname)
+	;	;catch e
+	;	;	throw "Error. For buffer length is not enough."
+	;	;	;	when buffer length is not enough, wont invoke error here
+	;	problem is at VarSetCapacity
 	
 	if (A_LastError == ERROR_MORE_DATA)
-		throw "ListLinks: ERROR_MORE_DATA, 260 was not enough..."
+		throw "ListLinks: ERROR_MORE_DATA, " MAX_PATH " was not enough..."
 	if (handle == 0xffffffff or handle=-1)
 		;	-1: test when path not exist.
 		throw "ListLinks: FindFirstFileNameW failed"
@@ -42,7 +50,7 @@ GetHardLinks(path_init)
 				paths[path]:=A_Index
 			
 			buflen := MAX_PATH
-			VarSetCapacity(linkname,buflen)
+			VarSetCapacity(linkname,buflen*Bytes_per_char)
 			more := DllCall("FindNextFileNameW"
 			,"UInt", handle
 			,"UInt*", buflen
