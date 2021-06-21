@@ -1,8 +1,24 @@
 ﻿#SingleInstance,Force
 #NoEnv
-#Include HotKey_WhenEditInSciTE.ahk
 #Include TrayTip.ahk
-IsDebug:=A_ScriptFullPath=A_LineFile
+if(StandAlone:=A_ScriptFullPath=A_LineFile){
+	#Include HotKey_WhenEditInSciTE.ahk
+	Menu, Tray, Icon, ReferLink.ico
+	Hotkey, If, previousFileSelected && not A_CaretX && WinActive("ahk_exe explorer.exe")
+	Hotkey, ~Esc, ReferLink~Esc
+	Hotkey, If, not A_CaretX && WinActive("ahk_exe explorer.exe")
+	Hotkey, !c, ReferLink!c
+	Hotkey, ~^c, ReferLink~^c
+	Hotkey, !x, ReferLink!x
+	Hotkey, !v, ReferLink!v
+	Hotkey, !z, ReferLink!z
+	Hotkey, If, not A_CaretX && WinActive("ReferLink.ahk ahk_class #32770")
+	Hotkey, !z, ReferLink!z2
+	Hotkey, IfWinActive, ReferLink.ahk ahk_class #32770 ahk_exe AutoHotkey.exe
+	Hotkey, !x, ReferLink!x2
+	Hotkey, If
+}
+IsDebug:=IsDebug?IsDebug:StandAlone
 if IsDebug
 	SetBatchLines -1
 if(not A_IsAdmin and not IsDebug){
@@ -12,7 +28,6 @@ if(not A_IsAdmin and not IsDebug){
 	;	could not debug..
 	ExitApp
 }
-Menu, Tray, Icon, ReferLink.ico
 #Include dataFromToClipboard.ahk
 #Include CheckIfIsSymlinkFileOrDirectoryOrNot.ahk
 ;	GetDirectTarget
@@ -28,17 +43,18 @@ GetFileSelected:=""
 	. "ShellGetSelected"
 c:=""""
 e:=""
-return
-#If previousFileSelected and not A_CaretX and WinActive("ahk_exe explorer.exe")
-~Esc::
-	SoundPlay,*16
-	gosub ResetSelectedRecord
-	return
-#If not A_CaretX and WinActive("ahk_exe explorer.exe")
-!c::	;switch between current select or final source of select as source for operation follow-up
-~^c::	;same as above but silent
-!x::	;{abstract file
-	isSilent:=A_ThisHotkey~="~"	;~^c
+goto ReferLink_End
+
+#If previousFileSelected && not A_CaretX && WinActive("ahk_exe explorer.exe")
+	ReferLink~Esc:	;{
+		SoundPlay,*16
+		gosub ResetSelectedRecord
+		return	;}
+#If not A_CaretX && WinActive("ahk_exe explorer.exe")
+ReferLink!c:	;switch between current select or final source of select as source for operation follow-up
+ReferLink~^c:	;same as above but silent
+ReferLink!x:	;{abstract file
+	isSilent:=A_ThisHotkey~="~" or A_ThisHotkey="!x"	;~^c
 	gosub GetSourceFilePath
 	SplitPath, sourceFilePath , sourceFileName, sourceDirPath, sourceFileExtension, sourceFileNameWithoutExt
 	;	The final backslash is not included even if the file is located in a drive's root directory.
@@ -134,7 +150,7 @@ Abort:	;{
 	}
 	referFilePath:=e
 	Exit	;}
-!v::	;{
+ReferLink!v:	;{
 	if not referFilePath
 		Exit
 	targetFolder:=Explorer_GetPath()
@@ -182,7 +198,7 @@ Abort:	;{
 	;~ Send  {F2}
 	;~ MsgBox %targetFolder%`n%targetFileName%
 	return	;}
-!z::	;{	search entrance
+ReferLink!z:	;{	search entrance
 	isSilent:=false
 	,previousOutput:=output:=""
 	gosub GetSourceFilePath
@@ -201,8 +217,8 @@ SearchEntrance:
 	}
 	MsgBox % output?output:"No entrance found."
 	return	;}
-#If not A_CaretX and WinActive("ReferLink.ahk ahk_class #32770")	;{
-!z::
+#If not A_CaretX && WinActive("ReferLink.ahk ahk_class #32770")	;{
+ReferLink!z2:
 	_:=previousOutput,previousOutput:=output,output:=_
 	Send {Enter}	;close MsgBox
 	gosub Toggle_Mode	
@@ -291,15 +307,10 @@ ShellGetSelected(){
 	}
 ;}
 #IfWinActive ReferLink.ahk ahk_class #32770 ahk_exe AutoHotkey.exe	;Set Abstract Identifier
-!x::Send {Enter}	;use current file name
-
-;----debug/test----
-/* 
-	#IfWinActive ReferLink.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
-	F3::
-		Send ^s
-		Reload
+	ReferLink!x2:
+		Send {Enter}	;use current file name
 		return
-	F2::ExitApp
- */
 #IfWinActive
+
+ReferLink_End:
+_:=_
