@@ -1,3 +1,5 @@
+if(A_ScriptFullPath=A_LineFile)
+	Menu, Tray, Icon, % SubStr(A_ScriptName,1,-3) "ico"
 #Include GetHardLinks.ahk
 ;	GetHardLinks
 #Include Get paths of selected items in an explorer window.ahk
@@ -9,6 +11,7 @@
 ;	Search()
 #Include ReferLink.ahk
 ;	GetAllEntraces()
+
 /* 
 	#IfWinActive DelFileWithLink.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
 	$F3::
@@ -17,18 +20,38 @@
 		return
 	$F2::ExitApp
  */
-#If not A_CaretX and ((WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770")))
+#If not WinActive("ahk_exe explorer.exe") and(WinActive("删除文件 ahk_class #32770") or WinActive("删除多个项目 ahk_class #32770"))
+;	"删除文件" / "删除多个项目"
+;	standard delete dialog invoked by other exe (like potplayer / everything)
+$Del::
+	if WinActive("删除多个项目 ahk_class #32770")
+		throw "Cant detect file path to be delete, when multiple selection outside explorer.exe"
+	explorer:=WinExist("A")
+	ControlGetText, fileToBeDelete, Static4
+	;	"Static4": file name to be delete.
+	;MsgBox file to be delete is: %Output%	;debug
+	if not ((founds:=Search(fileToBeDelete)) and founds.Count()=1)
+		return
+	_2:=(_1:=founds._NewEnum()).next(path)
+	;	;selectfiles:=can't founds[1]
+	RegExMatch(path,"O)(.+\\)(.+?)$",output)
+	folder:=output[1],selectfiles:=output[2]
+	;~ MsgBox Try to delete %folder%, %selectfiles%	;test
+	goto HandleDelete
+#If not A_CaretX and (WinActive("ahk_exe explorer.exe") or (not WinActive("删除") and WinActive("ahk_class #32770")))
+;	#32770: open / save..
 $+Del::	;del file(s), handle hard link entrance.
-$Del::	;del file(s), handle hard link entrance.
+$Del::
 	modifer:=GetKeyState("shift","P")?"+":""
 	explorer:=WinExist("A")
 	folder:=Explorer_GetPath()
-	if not folder
+	if(not folder or folder="ERROR")
 		return
 	;	contain "\"
 	selectfiles:=Explorer_GetSelected()
 	if not selectfiles
 		return
+HandleDelete:
 	pathsToDelete:=path:=targetPath:=symlinks:=""
 	Loop, Parse, % selectfiles,`n, `r
 		if (path:=folder A_LoopField) && hardLinks:=GetHardLinks(path){
@@ -66,7 +89,8 @@ $Del::	;del file(s), handle hard link entrance.
 	WinActivate, ahk_id %explorer%
 	WinWaitActive
 	Send %modifer%{Del}
-	WinWaitActive, 删除 ahk_class #32770 ahk_exe explorer.exe,,1
+	WinWaitActive, 删除 ahk_class #32770,,1
+	;	"ahk_exe explorer.exe" maybe "potplayer.exe"
 	;	删除: 删除文件/删除多个项目
 	if ErrorLevel
 		Exit
