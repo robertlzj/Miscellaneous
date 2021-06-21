@@ -1,7 +1,7 @@
 ﻿#SingleInstance,Force
 #NoEnv
 #Include TrayTip.ahk
-if(StandAlone:=A_ScriptFullPath=A_LineFile){
+if(ReferLink_StandAlone:=A_ScriptFullPath=A_LineFile){
 	#Include HotKey_WhenEditInSciTE.ahk
 	Menu, Tray, Icon, ReferLink.ico
 	Hotkey, If, previousFileSelected && not A_CaretX && WinActive("ahk_exe explorer.exe")
@@ -18,7 +18,7 @@ if(StandAlone:=A_ScriptFullPath=A_LineFile){
 	Hotkey, !x, ReferLink!x2
 	Hotkey, If
 }
-IsDebug:=IsDebug?IsDebug:StandAlone
+IsDebug:=IsDebug?IsDebug:ReferLink_StandAlone
 if IsDebug
 	SetBatchLines -1
 if(not A_IsAdmin and not IsDebug){
