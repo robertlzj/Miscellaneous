@@ -12,7 +12,7 @@ GetHardLinks(path_init)
 	static MAX_PATH := 260
 	
 	if (SubStr(path_init, 2, 2) != ":\")	; gotcha: 2 is the length, not the end
-		throw "GetHardLinks(path) \\ path (%path_init%) is not complete"
+		throw % "GetHardLinks(path) \ path (" path_init ") is not complete"
 	
 	path_init:=Format("{:U}",path_init)
 	
@@ -29,7 +29,8 @@ GetHardLinks(path_init)
 	
 	if (A_LastError == ERROR_MORE_DATA)
 		throw "ListLinks: ERROR_MORE_DATA, 260 was not enough..."
-	if (handle == 0xffffffff)
+	if (handle == 0xffffffff or handle=-1)
+		;	-1: test when path not exist.
 		throw "ListLinks: FindFirstFileNameW failed"
 	
 	try
