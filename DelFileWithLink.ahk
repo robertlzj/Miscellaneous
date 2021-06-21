@@ -96,9 +96,9 @@ DelFileWithLink_HandleDelete:	;{
 				pathsToDelete.=symlinks
 			}
 		}
-	WinActivate, ahk_id %explorer%
-	WinWaitActive
-	Send %modifer%{Del}
+	WinWaitActive, ahk_id %explorer%,, 0.5
+	if not ErrorLevel
+		Send %modifer%{Del}
 	WinWaitActive, 删除 ahk_class #32770,,1
 	;	"ahk_exe explorer.exe" maybe "potplayer.exe"
 	;	删除: 删除文件/删除多个项目
