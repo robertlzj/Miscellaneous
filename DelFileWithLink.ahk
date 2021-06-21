@@ -1,5 +1,13 @@
-if(A_ScriptFullPath=A_LineFile)
+DelFileWithLink_StandAlone:=A_ScriptFullPath=A_LineFile
+if(DelFileWithLink_StandAlone){
 	Menu, Tray, Icon, % SubStr(A_ScriptName,1,-3) "ico"
+	Hotkey, If, not WinActive("ahk_exe explorer.exe") && (WinActive("删除文件 ahk_class #32770") || WinActive("删除多个项目 ahk_class #32770"))
+	Hotkey, $Del, DelFileWithLink_$Del
+	Hotkey, If, not A_CaretX && (WinActive("ahk_exe explorer.exe") || (not WinActive("删除") && WinActive("ahk_class #32770")))
+	Hotkey, $+Del, DelFileWithLink_$+Del
+	Hotkey, $Del, DelFileWithLink_$Del_2
+	Hotkey, If
+}
 #Include GetHardLinks.ahk
 ;	GetHardLinks
 #Include Get paths of selected items in an explorer window.ahk
@@ -11,37 +19,39 @@ if(A_ScriptFullPath=A_LineFile)
 ;	Search()
 #Include ReferLink.ahk
 ;	GetAllEntraces()
+goto DelFileWithLink_End
 
-/* 
-	#IfWinActive DelFileWithLink.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-	$F3::
-		Send ^s
-		Reload
-		return
-	$F2::ExitApp
- */
-#If not WinActive("ahk_exe explorer.exe") and(WinActive("删除文件 ahk_class #32770") or WinActive("删除多个项目 ahk_class #32770"))
+/* 职责，
+		a. 对explorer.exe，触发系统的删除对话框
+		b. 对非explorer.exe，在其中触发DelFileWithLink_ExternalTrigger，
+		c. 对非explorer.exe，在系统的删除对话框下，由Delete触发
+*/
+#If not WinActive("ahk_exe explorer.exe") && (WinActive("删除文件 ahk_class #32770") || WinActive("删除多个项目 ahk_class #32770"))	;{
 ;	"删除文件" / "删除多个项目"
 ;	standard delete dialog invoked by other exe (like potplayer / everything)
-$Del::
+DelFileWithLink_$Del:	;{
+DelFileWithLink_ExternalTrigger:
 	if WinActive("删除多个项目 ahk_class #32770")
 		throw "Cant detect file path to be delete, when multiple selection outside explorer.exe"
 	explorer:=WinExist("A")
 	ControlGetText, fileToBeDelete, Static4
 	;	"Static4": file name to be delete.
 	;MsgBox file to be delete is: %Output%	;debug
-	if not ((founds:=Search(fileToBeDelete)) and founds.Count()=1)
+	if not ((founds:=Search(fileToBeDelete)) and (count:=founds.Count())=1){
+		MsgBox There are multiple files (%count%). Cant detect which one is being delete.
 		return
+	}
 	_2:=(_1:=founds._NewEnum()).next(path)
 	;	;selectfiles:=can't founds[1]
 	RegExMatch(path,"O)(.+\\)(.+?)$",output)
 	folder:=output[1],selectfiles:=output[2]
 	;~ MsgBox Try to delete %folder%, %selectfiles%	;test
-	goto HandleDelete
-#If not A_CaretX and (WinActive("ahk_exe explorer.exe") or (not WinActive("删除") and WinActive("ahk_class #32770")))
+	goto DelFileWithLink_HandleDelete	;}
+;}
+#If not A_CaretX && (WinActive("ahk_exe explorer.exe") || (not WinActive("删除") && WinActive("ahk_class #32770")))
 ;	#32770: open / save..
-$+Del::	;del file(s), handle hard link entrance.
-$Del::
+DelFileWithLink_$+Del:	;del file(s), handle hard link entrance.
+DelFileWithLink_$Del_2:	;{
 	modifer:=GetKeyState("shift","P")?"+":""
 	explorer:=WinExist("A")
 	folder:=Explorer_GetPath()
@@ -51,7 +61,7 @@ $Del::
 	selectfiles:=Explorer_GetSelected()
 	if not selectfiles
 		return
-HandleDelete:
+DelFileWithLink_HandleDelete:	;{
 	pathsToDelete:=path:=targetPath:=symlinks:=""
 	Loop, Parse, % selectfiles,`n, `r
 		if (path:=folder A_LoopField) && hardLinks:=GetHardLinks(path){
@@ -116,4 +126,7 @@ HandleDelete:
 		else
 			throw "Error, unhandle case."
 	}
-	return
+	return	;}
+	;}
+DelFileWithLink_End:
+_:=_
