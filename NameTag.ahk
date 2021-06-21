@@ -41,6 +41,8 @@
 			}
 		}
 	}
+	SystemErrorCodes={183:"Cannot create a file when that file already exists.Cannot create a file when that file already exists."
+		,32:"The process cannot access the file because it is being used by another process."}
 return
 
 condition(){
@@ -191,9 +193,10 @@ handle:	;edit file name
 				updateFileCount++
 				if(ErrorLevel!=0){
 					;https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes
-					MsgBox,,Name Tag Error, % "failed. " A_LastError
+					MsgBox,,Name Tag Error, % "failed. " A_LastError SystemErrorCodes[A_LastError]
 						. (A_LastError=32?"(file used)":"")
 					;	32: The process cannot access the file because it is being used by another process.
+					;	183: Cannot create a file when that file already exists.
 					WriteLog(A_LoopFileLongPath " failed. " . A_LastError)
 				}else
 					WriteLog(A_LoopFileLongPath . "`t>`t" . newFileName)
