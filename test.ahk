@@ -2,14 +2,16 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
-
-Loop 3{
-	SoundPlay,ClickDouble.mp3,1
-	Sleep 1000
-	SoundPlay,ClickDouble2.mp3,1
-	Sleep 1000
-}
 ExitApp
+if(StaticValue_Initial){
+	globalValue:=2
+	f(){
+		global globalValue:=3
+		static StaticValueFromBuildIn:= A_IsUnicode,StaticValueFromGolbal:=globalValue
+		MsgBox % StaticValueFromBuildIn ", " StaticValueFromGolbal	;1,
+	}
+	f()
+}
 if(SoundPlay){
 	SoundPlay,*-1	;success
 	Input, _, L1
@@ -32,6 +34,7 @@ if(CouldConcateWithComma){
 if(ErrorByRefWithDefaultWontPassParameter){
 	;	recursive ByRef with empty/default input wont pass correct parameter
 	;	https://www.autohotkey.com/boards/viewtopic.php?f=14&t=91727
+	/*
 	f(ByRef p:=""){
 		if not p	;endless loop
 			p:=0
@@ -40,6 +43,7 @@ if(ErrorByRefWithDefaultWontPassParameter){
 		return p
 	}
 	MsgBox % f()
+	*/
 }
 if(RecursiveInvokeWithByRef){
 	/* 
