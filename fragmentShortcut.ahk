@@ -53,7 +53,9 @@ $Delete::Send {Enter}	;}
 	$Del::
 	$+Del::
 		Send +{Del}	;by default, del only apply to playlists
-		WinWaitActive,删除 ahk_class #32770, 确实要
+		WinWaitActive,删除 ahk_class #32770, 确实要, 0.5
+		if ErrorLevel
+			throw "WinWaitActive failed."
 		gosub DelFileWithLink_ExternalTrigger
 		return
 	;	#IfWinActive 删除文件 ahk_class #32770 ahk_exe PotPlayerMini64.exe
@@ -67,9 +69,10 @@ $Delete::Send {Enter}	;}
 #IfWinActive fragmentShortcut.ahk ahk_class #32770 ahk_exe AutoHotkey.exe, delete all entrance?
 	$Del::Send !y
 	~Esc::
-		WinWaitNotActive
-		WinActivate 删除 ahk_class #32770, 确实要
-		WinWaitActive,A,,0.5
+		;	WinWaitNotActive,,,0.5
+		;	WinActivate 删除 ahk_class #32770, 确实要
+		;	WinWaitActive,A,,0.5
+		WinWaitActive, 删除 ahk_class #32770, 确实要, 0.5
 		if ErrorLevel
 			throw "WinWaitActive failed."
 		Send {Esc}
