@@ -37,7 +37,7 @@ DelFileWithLink_ExternalTrigger:
 	ControlGetText, fileToBeDelete, Static4
 	;	"Static4": file name to be delete.
 	;MsgBox file to be delete is: %Output%	;debug
-	if not ((founds:=Search(fileToBeDelete)) and (count:=founds.Count())=1){
+	if not ((founds:=Search("wfn:" fileToBeDelete)) and (count:=founds.Count())=1){
 		MsgBox There are multiple files (%count%). Cant detect which one is being delete.
 		return
 	}
@@ -79,7 +79,7 @@ DelFileWithLink_HandleDelete:	;{
 			IfMsgBox, Cancel
 				Exit
 		}else if(entrances:=GetAllEntraces(path)){	;check if selection is source (destination) of symlink
-			MsgBox , % 0x3|0x20,,Path "%path%" is link target.`nYes to Remove all entrance (there is another comfirm)`nNo to keep symlinks (brokean)?
+			MsgBox , % 0x3|0x20,,Path "%path%" is link target.`nYes to Remove all entrance (there is another comfirm)`nNo [Esc] to keep symlinks (brokean)?
 			;	0x3: Yes/No/Cancel
 			;	0x20:	Icon Question
 			IfMsgBox, Cancel
