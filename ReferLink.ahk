@@ -158,14 +158,15 @@ ReferLink!v:	;{
 	if not targetFolder
 		Exit
 	targetIndex:=e
-	while true{
-		targetFileName:=referFileNameWithoutExt . (targetIndex?("·" . targetIndex):e) . (referFileExtension?("." referFileExtension):e)
-		targetFilePath:=targetFolder . targetFileName
-		;~ MsgBox % targetFilePath	;test
-		if not FileExist(targetFilePath)
-			break
-		targetIndex++
-	}
+	if(FileExist(targetFilePath:=targetFolder . referFileNameWithoutExt . (referFileExtension?("." referFileExtension):e)))
+		while true{
+			targetFileName:=referFileNameWithoutExt . ("·" . targetIndex) . (referFileExtension?("." referFileExtension):e)
+			targetFilePath:=targetFolder . targetFileName
+			;~ MsgBox % targetFilePath	;test
+			if not FileExist(targetFilePath)
+				break
+			targetIndex++
+		}
 	FileAppend, % "targetFilePath: " targetFilePath . "`n", *
 	command:="ln --symbolic " . referFilePathWithQuotation . " " . HandleSpaceInPath(targetFilePath)
 	;	shift upstream
