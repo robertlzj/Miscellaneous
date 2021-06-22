@@ -96,7 +96,7 @@ DelFileWithLink_HandleDelete:	;{
 				pathsToDelete.=symlinks
 			}
 		}
-	WinWaitActive, ahk_id %explorer%,, 0.5
+	WinWaitActive, ahk_id %explorer%,, 1
 	if not ErrorLevel
 		Send %modifer%{Del}
 	WinWaitActive, É¾³ý ahk_class #32770,,1
