@@ -5,6 +5,7 @@
 #Include *i NameTag.data
 #Include dataFromToClipboard.ahk
 #Include TrayTip.ahk
+#Include HotKey_WhenEditInSciTE.ahk
 
 	Menu, Tray, Tip, click F2 without selection to start/stop`,`nctrl 1~g to set`, 1~g to apply`nin editor F1 reload/F2 exit
 	InputBoxHeight:=130
@@ -21,7 +22,7 @@
 	Menu, Tray, Icon, Rn(B).ico
 	;~ SoundPlay,*64	;info
 	SoundPlay,*16	;failed
-	shortcutKeyArray:=["1","2","3","4","5","q","w","e","r","a","s","d","f"]
+	shortcutKeyArray:=["1","2","3","4","5","q","w","e","r","t","a","s","d","f","g"]
 	Hotkey,If,condition()
 	for i,key in shortcutKeyArray{
 		Hotkey,% key,handle
@@ -83,26 +84,18 @@ condition(){
 	}
 	return
 
-#IfWinActive NameTag.ahk ahk_class SciTEWindow ahk_exe SciTE.exe
-F3::
-	Send ^s
-	Reload
-	return
-F2::ExitApp
-
 #If condition()
-/* 
-	^`::
-		if A_TickCount-previousExitTime<2500{
-			TrayTip,Name Tag, Exit,,16
-			SoundPlay,*48	;Exclamation
-			Sleep 500
-			ExitApp
-		}else
-			Reload
- */
 `::
 	key:="``"
+	length:=4
+	dataList:="`nCurrent data:`n"
+	Loop % shortcutKeyArray.Length(){
+		shortcutKey:=shortcutKeyArray[A_Index]
+		data:=dataArrary[shortcutKey]
+		dataList.=Format("{:s}: {: -" length "s} ",shortcutKey,SubStr(data,1,length))
+		;	half - width space character for padding
+		dataList.=Mod(A_Index,5)=0?"`n":""
+	}
 	gosub writeData
 	if ErrorLevel	;cancel
 		return
@@ -111,7 +104,8 @@ F2::ExitApp
 setData:
 	key:=SubStr(A_ThisHotkey,2)
 writeData:
-	InputBox,outputVar,NameTag,Input name tag for shortkey "%key%",,,InputBoxHeight,,,,,% dataArrary[key ""]
+	InputBox,outputVar,NameTag,Input name tag for shortkey "%key%" %dataList%,,,% InputBoxHeight+(dataList?70:0),,,,,% dataArrary[key ""]
+	dataList:=""
 	if ErrorLevel	;cancel
 		return
 	data:=outputVar
@@ -147,7 +141,8 @@ handle:	;edit file name
 		if(not fileAttribute or fileAttribute~="D")	;Directory
 			return
 	 */
-	dataPattern:="[." separator " ]\Q" . data . "\E(?=[¡¤.])"
+	;~ dataPattern:="[." separator " ]\Q" . data . "\E(?=[¡¤.])"
+	dataPattern:=separator "+\Q" . data . "\E(?=[¡¤.])"
 	;	\b wont work correctly on string like chinese?
 	;	\b is equivalent to [a-zA-Z0-9_]
 	updateFileCount:=0
@@ -173,7 +168,7 @@ handle:	;edit file name
 			}else{
 				mode:="add"
 				postfix:=A_LoopFileExt?("." . A_LoopFileExt):""
-				newFileName:=(postfix?SubStr( A_LoopFileName,1,-StrLen(postfix)):A_LoopFileName) . separator . data . postfix
+				newFileName:=RTrim(postfix?SubStr(A_LoopFileName,1,-StrLen(postfix)):A_LoopFileName,separator) . separator . data . postfix
 			}
 			if newFileName{
 				folderPath:=A_LoopFileDir . "\"
