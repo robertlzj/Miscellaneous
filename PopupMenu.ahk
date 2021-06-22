@@ -195,25 +195,14 @@ if(test){
 
 goto Skip_To_End
 #z::	;{
-	;	StorePos()
-	;	Menu, MyMenu, Show  ; i.e. press the Win-Z hotkey to show the menu.
-	;change to
 	ShowMenu("MyMenu")
-	;	Menu, Submenu1, Show  ; i.e. press the Win-Z hotkey to show the menu.
-	;	;	will show when previous closed
 	return
 ;}
 	
-	;	StorePos(){
-	;		global
-	;		MouseGetPos MouseX, MouseY
-	;	}
-	Restore(){
-		;	global
-		;	Menu, MyMenu, Show,% MouseX,% MouseY
-		;Change to
-		ShowMenu()
-	}
+Restore(){
+	;deprecate. keep for compatibility
+	ShowMenu()
+}
 ShowMenu(myMenuName:=""){
 	static MouseX, MouseY,MenuName
 	if(myMenuName){
@@ -252,13 +241,13 @@ ShiftItemTopAfterPined(indexToShift){
 	}
 	return index_new
 }
-ConstructMenu(menuStruct){
+ConstructMenu(menuStruct:=""){
 	global Count_Show_Item_RootMenu,Menu_IdContent,Menu_IndexId,HotkeyMap
 	Loop % Count_Show_Item_RootMenu {
 		item:=Menu_IdContent[Menu_IndexId[A_Index]]
 		MenuItemName:="&" hotkeyMap[A_Index] " " item.Name
 		type:=(IsLabel(item.Handle) or IsFunc(item.Handle))?"handle":"subMenu"
-		if type="subMenu" and not MenuStruct_MenuName[item]{
+		if(type="subMenu" and not MenuStruct_MenuName[item]){
 			
 		}
 		;Menu, MyMenu, Add, % MenuItemName,% item.subMenu?(":" item.Handle):"MenuHandle",+Radio
@@ -267,10 +256,5 @@ ConstructMenu(menuStruct){
 			Menu, MyMenu, Check, % MenuItemName
 	}
 }
-/* 
-	#If WinActive("PopupMenu.ahk ahk_exe SciTE.exe")
-	F3::Reload
-	F2::ExitApp
-	#If 
- */
 Skip_To_End:
+_:=_
