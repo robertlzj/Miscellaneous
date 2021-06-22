@@ -1,7 +1,20 @@
 ﻿#NoEnv
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
-
+^i::	;click
+		;~ if(A_ThisHotkey=A_PriorHotkey and A_TimeSincePriorHotkey<300)
+			;~ Send {Del}
+		;~ else
+			Send {PGDN}
+		return
+	^b::	;long click
+		Send {PGUP}
+		return
+	^u::	;press
+		;~ MsgBox % A_ThisHotkey	;test
+		ToolTip 123
+		Send {Del}
+		return
 ExitApp
 if(StringOrNumberKey){
 	o:={2:"A",(3):"B",("4"):"C"}
@@ -139,13 +152,11 @@ if(WScript_Shell_Exec_IsAdmin_ErrorLevel_Output){
 }
 #IfWinActive ahk_exe EXCEL.EXE
 NumpadDot::Tab
-;~ #If WinActive("test.ahk ahk_exe SciTE.exe")
-;~ F2::ExitApp
-;~ F3::Reload
 /* 
 	MsgBox % previousFilePath:=RegExReplace("a\b\ab`na\b\aab`na\b\abb`na\b\ab\a`na\b\ab","m`n)(?<=[/\\])\Q" . "ab" . "\E$","c") ", " ErrorLevel 
  */
  #If
+/*
  F2::
 	nl:="`n"
 	Length:=Length?Length:0
@@ -153,6 +164,7 @@ NumpadDot::Tab
 	FoundPos:=RegExMatch(Clipboard,NeedleRegEx,Length)
 	ToolTip % FoundPos nl Length nl Clipboard nl NeedleRegEx nl SubStr(Clipboard,FoundPos,Length)
 	return
+*/
  #If WScript
 F2::
 	shell := ComObjCreate("WScript.Shell")
