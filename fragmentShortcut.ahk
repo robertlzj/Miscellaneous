@@ -28,14 +28,7 @@ $F1::
 	}else
 		Send {F1}
 	return
-/* 
-	#IfWinActive fragmentShortcut.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
-	$F3::
-		Send ^s
-		Reload
-		return
-	$F2::ExitApp
- */
+
 #IfWinActive ahk_class #32770, 否(&N)
 ;~ #IfWinActive ahk_class #32770 ahk_exe AutoHotkey, 否(&N)
 ;	not work
@@ -53,10 +46,10 @@ $Delete::Send {Enter}	;}
 
 #IfWinActive	ahk_exe PotPlayerMini64.exe	;{
 #IfWinActive ahk_class PotPlayer64 ahk_exe PotPlayerMini64.exe
-	$Del::
-	$+Del::
+	Del::
+	PotPlayer_Del:
 		Send +{Del}	;by default, del only apply to playlists
-		WinWaitActive,删除 ahk_class #32770, 确实要, 0.5
+		WinWaitActive,删除 ahk_class #32770, 确实要, 1
 		if ErrorLevel
 			throw "WinWaitActive failed."
 		gosub DelFileWithLink_ExternalTrigger
@@ -69,6 +62,19 @@ $Delete::Send {Enter}	;}
 	;		;	+Delete: in PotPlayer, delete file, prompt dialog whether to delete (to recycle bin)
 	;Abstract.
 	;	see "#IfWinActive, 删除 ahk_class #32770, 确实要“
+	;Set by Logitech 游戏软件
+	^i::	;click
+		;~ if(A_ThisHotkey=A_PriorHotkey and A_TimeSincePriorHotkey<300)
+			;~ Send {Del}
+		;~ else
+			Send {PGDN}
+		return
+	^b::	;long click
+		Send {PGUP}
+		return
+	^u::	;press
+		; MsgBox % A_ThisHotkey	;test
+		goto PotPlayer_Del
 #IfWinActive fragmentShortcut.ahk ahk_class #32770 ahk_exe AutoHotkey.exe, delete all entrance?
 	$Del::Send !y
 	~Esc::
