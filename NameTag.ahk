@@ -93,7 +93,7 @@ condition(){
 	dataList:="`nCurrent data:`n"
 	Loop % shortcutKeyArray.Length(){
 		shortcutKey:=shortcutKeyArray[A_Index]
-		data:=dataArrary[shortcutKey]
+		data:=dataArrary[shortcutKey ""]
 		dataList.=Format("{:s}: {: -" length "s} ",shortcutKey,SubStr(data,1,length))
 		;	half - width space character for padding
 		dataList.=Mod(A_Index,5)=0?"`n":""
