@@ -30,6 +30,11 @@
 	}
 	Hotkey,If
 	OnExit("Save")
+	SystemErrorCodes:={183:"Cannot create a file when that file already exists.Cannot create a file when that file already exists."
+		,32:"The process cannot access the file because it is being used by another process."}
+	SetTimer,NameTag_MonitorActiveWindow,-1
+	goto NameTag_End
+NameTag_MonitorActiveWindow:
 	Loop{	;prompt if window enables Name Tag
 		WinWaitNotActive, A
 		if WinActive("ahk_exe explorer.exe") or WinActive("ahk_class #32770"){
@@ -42,9 +47,6 @@
 			}
 		}
 	}
-	SystemErrorCodes={183:"Cannot create a file when that file already exists.Cannot create a file when that file already exists."
-		,32:"The process cannot access the file because it is being used by another process."}
-return
 
 condition(){
 	global windowsEnable
@@ -188,8 +190,8 @@ handle:	;edit file name
 				updateFileCount++
 				if(ErrorLevel!=0){
 					;https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes
-					MsgBox,,Name Tag Error, % "failed. " A_LastError SystemErrorCodes[A_LastError]
-						. (A_LastError=32?"(file used)":"")
+					MsgBox,,Name Tag Error, % "failed. " A_LastError ": " SystemErrorCodes[A_LastError]
+						;. (A_LastError=32?"(file used)":"")
 					;	32: The process cannot access the file because it is being used by another process.
 					;	183: Cannot create a file when that file already exists.
 					WriteLog(A_LoopFileLongPath " failed. " . A_LastError)
@@ -223,3 +225,6 @@ Save(){
 	fileObject.Write(save)
 	fileObject.Close()
 }
+
+NameTag_End:
+_:=_
