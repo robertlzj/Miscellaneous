@@ -3,6 +3,11 @@
 #Include HotKey_WhenEditInSciTE.ahk
 
 ExitApp
+if(StringOrNumberKey){
+	o:={2:"A",(3):"B",("4"):"C"}
+	s:="|"
+	MsgBox % o[2] s o["2"] o[3] s o["3"] o[4] s o["4"] ;A|B||C
+}
 if(StaticValue_Initial){
 	globalValue:=2
 	f(){
