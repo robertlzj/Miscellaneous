@@ -4,6 +4,9 @@
 ;todo: keep selection
 #Include *i NameTag.data
 #Include dataFromToClipboard.ahk
+;	dataFromToClipboard
+#Include Get paths of selected items in an explorer window.ahk
+;	Explorer_GetPath / Explorer_GetSelected
 #Include TrayTip.ahk
 #Include HotKey_WhenEditInSciTE.ahk
 
@@ -129,7 +132,8 @@ handle:	;edit file name
 		active:=key="``"?true:false
 		;	first time/new start
 	}
-	filePath:=dataFromToClipboard()
+	;~ filePath:=dataFromToClipboard()
+	filePath:=Explorer_GetPath() . Explorer_GetSelected()
 	if(previousFilePath!=filePath){
 		previousFilePath:=filePath
 		active:=key="``"?true:false
