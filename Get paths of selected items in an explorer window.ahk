@@ -1,3 +1,4 @@
+;deprecate. see phone.ahk \ GetSelectPath()
 #SingleInstance,Force
 #NoEnv
 global pathOfSelected:="File" ;or "FolderAndFile"
@@ -21,9 +22,10 @@ F1_GetPathsOfSelectedItemsInAnExplorerWindow:
 ;	https://autohotkey.com/board/topic/60985-get-paths-of-selected-items-in-an-explorer-window/
 F2_GetPathsOfSelectedItemsInAnExplorerWindow:
 	path := Explorer_GetPath()
-	all := Explorer_GetAll()
+	;~ all := Explorer_GetAll()
 	sel := Explorer_GetSelected()
-	FileAppend, % "Path:`n" path "`nAll:`n" all "`nSel:`n" sel "`n", *
+	;~ FileAppend, % "Path:`n" path "`nAll:`n" all "`nSel:`n" sel "`n", *
+	MsgBox, % "Path:`n" path "`nAll:`n" all "`nSel:`n" sel "`n"
 	;1: normal (folder/file) path
 	;	Path (Folder): C:\Folder
 	;	All/Sel (File): File.txt
@@ -91,9 +93,10 @@ Explorer_GetAll(hwnd="")
 	return Explorer_Get(hwnd)
 }
 Explorer_GetSelected(hwnd="")
-{
+{	;deprecate. see phone.ahk \ GetSelectPath()
 	return Explorer_Get(hwnd,true)
 	;	only contain file name (not contain folder)
+	;	see Explorer_GetPath()
 }
 
 Explorer_GetWindow(hwnd="")
