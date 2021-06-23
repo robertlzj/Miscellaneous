@@ -1,21 +1,15 @@
 ﻿#NoEnv
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
-^i::	;click
-		;~ if(A_ThisHotkey=A_PriorHotkey and A_TimeSincePriorHotkey<300)
-			;~ Send {Del}
-		;~ else
-			Send {PGDN}
-		return
-	^b::	;long click
-		Send {PGUP}
-		return
-	^u::	;press
-		;~ MsgBox % A_ThisHotkey	;test
-		ToolTip 123
-		Send {Del}
-		return
+
 ExitApp
+if(FileExistOnDevicePath)
+	MsgBox % FileExist("此电脑\RobertP\内部存储\DCIM\Camera\IMG_20210623_212002.jpg")
+if(ParseDevicePath){
+	path=::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\\?\usb#vid_12d1subclass_ff&prot_00#7&32e05499&2&0000#{6ac27878-a6fa-4155-ba85-f98f491d4f33}\SID-{10001,,246853664768}\{0000000B-0001-0001-0000-000000000000}\{0000016C-0001-0001-0000-000000000000}\{00001E0C-0001-0001-0000-000000000000}
+	Loop, Files,% path
+		MsgBox could parse
+}
 if(StringOrNumberKey){
 	o:={2:"A",(3):"B",("4"):"C"}
 	s:="|"
@@ -172,12 +166,12 @@ F2::
 	MsgBox % exec.StdOut.ReadAll()
 	return
 #If
-F1::
+;F1::
 	ControlGetFocus, OutputVar,A
 	ToolTip % OutputVar ", " ErrorLevel
 	return
 #If false
-F1::
+;F1::
 	FileSelectFile, OutputVar , M3, , ,
 	;	FileSelectFile, OutputVar , Options, RootDir\Filename, Title, Filter
 	;	M3: 3=1+2
