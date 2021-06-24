@@ -11,8 +11,13 @@
 ;		也出现过:
 ;			Windows 找不到“...”。请检查拼写并重试。
 ;	此电脑\RobertP\内部存储\DCIM\Camera\IMG_20210623_212002.jpg
+if(standAlone:=A_ScriptFullPath=A_LineFile){
+	Loop 4
+		Hotkey,F%A_Index%,F%A_Index%
+}
+goto phone_End
 
-F1::	;{test path (parse name)
+F1:	;{test path (parse name)
 	;	GetDeviceFolder or from computer
 	Loop{
 		InputBox, outputVar,,% "Input path (computer volume or device)",,,140,,,,,% outputVar
@@ -44,7 +49,7 @@ F1::	;{test path (parse name)
 	MsgBox % items
 	return
 ;}
-F2::	;{GetSelectPath
+F2:	;{GetSelectPath
 	path:=GetSelectPath()
 	files:=""
 	Loop % path.Length()
@@ -94,7 +99,7 @@ F2::	;{GetSelectPath
 	}
 	return
 ;}
-F3::	;{rename
+F3:	;{rename
 	path:=GetSelectPath()
 	if(path.Length()!=1)
 		return
@@ -112,7 +117,44 @@ F3::	;{rename
 		Rename(paths,outputVar)
 	return
 ;}
+F4:	;{Path exist
+	Loop{
+		InputBox, outputVar,,% "Check path exist.`nInput path (computer volume or device)",,,150,,,,,% outputVar
+		if ErrorLevel
+			Exit
+		if(result:=PathExist(outputVar))
+			MsgBox % "Path exist, it's " (result~="N"?"Namespace"
+				:((result~="D"?"Folder":"File") (result~="L"?", and it's a link":""))) "."
+		else
+			MsgBox Path not exist.
+	}
+	return
+;}
 
+ItemMove(folder,item){
+	static shell:=ComObjCreate("Shell.Application")
+	if IsObject(folder)
+		folderObject:=folder
+	else if(StrLen(folderPath)>1 and (folderPath:=folder) and  (attribute:=PathExist(folderPath))){
+		if not attribute~="D"
+			throw "Target is not a folder."
+		namespace:=GetNamespace(folderPath)
+		folderItem:=namespace.ParseName(folderPath)
+		folderObject:=folderItem.GetFolder
+	}else
+		throw "Cant handle Param."
+	folderObject.MoveHere(item)
+	;	https://docs.microsoft.com/en-us/windows/win32/shell/folder-movehere
+	;	The item or items to move. This can be a string that represents a file name, a FolderItem object, or a FolderItems object.
+}
+PathExist(path){
+	namespace:=GetNamespace(path)
+	if(not path)
+		return "N"	;namespace
+	item:=namespace.ParseName(path)
+	if(item)
+		return (item.IsFolder=-1?"D":"F") (item.IsLink=-1?"L":"")
+}
 GetDeviceFolder(deviceName) {
 	static shell := ComObjCreate("Shell.Application")
 	static computer := shell.Namespace("::{20d04fe0-3aea-1069-a2d8-08002b30309d}")
@@ -126,6 +168,7 @@ GetDeviceFolder(deviceName) {
 }
 GetActiveWindowComObject(hWnd:=""){
 	static shell:=ComObjCreate("Shell.Application")
+	;	https://docs.microsoft.com/en-us/windows/win32/shell/shell
 	hWnd := hWnd?hWnd:WinExist("A")
 	;also see: Get paths of selected items in an explorer window.ahk
 	for window in shell.Windows       ; ShellFolderView object: https://goo.gl/MhcinH
@@ -167,6 +210,9 @@ Rename(path,name){
 	try
 		folderItem.Name:=name
 		;	may prompt duplicate name
+	catch
+		return false
+	return true
 }
 Rename2(folderPath,origName,newName){
 	;	can only access volume (not device)
@@ -190,12 +236,12 @@ Rename2(folderPath,origName,newName){
 GetNamespace(ByRef path){
 	static shell:=ComObjCreate("Shell.Application")
 	static coumputer:=shell.Namespace("::{20d04fe0-3aea-1069-a2d8-08002b30309d}")
-	if(path~=".:\\")	;volume
+	if(path~=".:\\?")	;volume
 		;	or "此电脑" (wont appear at title bar)
 		namespace:=coumputer
 		;	https://docs.microsoft.com/en-us/windows/win32/shell/shell-namespace
 	else{
-		if not RegExMatch(path,"O)^(?:此电脑\\)?(.+?)\\(.+)",found)
+		if not RegExMatch(path,"O)^(?:此电脑\\)?(.+?)(?=\\(.*)$|$)",found)
 			;	"此电脑" will appear at title bar
 			throw "Cant parse path, which is neither volume or device."
 		deviceName:=found[1]
@@ -214,3 +260,6 @@ GetNamespace(ByRef path){
 ;	;	part afront is path, could open as address
 
 ;lightroom （5） 无法识别到 手机卷，但可以导入（“复制为DNG”、“复制”、“移动”、“添加”）
+
+phone_End:
+_:=_
