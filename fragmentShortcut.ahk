@@ -10,6 +10,20 @@ SetTitleMatchMode, 2
 ;	2: anywhere
 goto fragmentShortcut_End
 
+#IfWinActive Variable inspection ahk_class AutoHotkeyGUI ahk_exe InternalAHK.exe
+Esc::Send !{F4}
+#IfWinActive [Debugging] ahk_class SciTEWindow ahk_exe SciTE.exe
+~LButton::
+	inspectVariableOn:=(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<500)
+	return
+#If inspectVariableOn
+~LButton up::
+	if(A_TimeSincePriorHotkey>100 and A_PriorHotkey="~LButton"){
+		Send +{F10}
+		Sleep 200
+		Send i	;Inspect variable...
+	}
+	return
 #IfWinActive ahk_class SciTEWindow ahk_exe SciTE.exe
 $F1::
 	WinGet, OutputVar, ID ,AutoHotkey Help ahk_class HH Parent
@@ -155,9 +169,18 @@ ClassUnderMouse(){
 #IfWinActive ahk_exe msedge.exe	;{
 ~^d::	;favorite
 	WinWaitActive 编辑收藏夹
-~!d::	;address bar
 	Send ^c{Esc}
 	return
+~!d::	;{address bar
+	;	ControlGetFocus, outputVar, A
+	;	ToolTip % "ControlGetFocus: " outputVar ", Caret: " A_CaretX
+	;	get nothing (in Edge).
+	;	if(outputVar="Intermediate D3D Window1")
+	;		Send ^c{Esc}
+	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<800)
+		Send ^c
+	return
+	;}
 ;}
 #IfWinActive ▶ ahk_exe msedge.exe	;{
 RControl::
