@@ -9,6 +9,8 @@
 ;	Explorer_GetPath / Explorer_GetSelected
 #Include TrayTip.ahk
 #Include HotKey_WhenEditInSciTE.ahk
+#Include phone.ahk
+;	GetSelectPath/PathExist/Rename
 
 	Menu, Tray, Tip, click F2 without selection to start/stop`,`nctrl 1~g to set`, 1~g to apply`nin editor F1 reload/F2 exit
 	InputBoxHeight:=130
@@ -132,8 +134,15 @@ handle:	;edit file name
 		active:=key="``"?true:false
 		;	first time/new start
 	}
-	;~ filePath:=dataFromToClipboard()
-	filePath:=Explorer_GetPath() . Explorer_GetSelected()
+	;	;	filePath:=dataFromToClipboard()
+	;	can't handle device
+	;	;	filePath:=Explorer_GetPath() . Explorer_GetSelected()
+	;	can't handle multiple selection
+	pathObject:=GetSelectPath()
+	folder:=pathObject.Folder
+	filePath:=""
+	Loop % pathObject.Length()
+		filePath.=folder (file:=pathObject[A_Index]) "`n"
 	if(previousFilePath!=filePath){
 		previousFilePath:=filePath
 		active:=key="``"?true:false
@@ -148,62 +157,74 @@ handle:	;edit file name
 			return
 	 */
 	;~ dataPattern:="[." separator " ]\Q" . data . "\E(?=[¡¤.])"
-	dataPattern:=separator "+\Q" . data . "\E(?=[¡¤.])"
+	dataPattern:=separator "+\Q" . data . "\E(?=[¡¤.]|$)"
 	;	\b wont work correctly on string like chinese?
 	;	\b is equivalent to [a-zA-Z0-9_]
 	updateFileCount:=0
 	activateFileCount:=0
 	Loop, Parse, filePath, `n,`r
-	{
-		Loop, Files,% A_LoopField
-		{
+		if(A_LoopField){
+			;	Loop, Files,% A_LoopField
+			SplitPath,A_LoopField, OutFileName, OutDir, OutExtension, OutNameNoExt, OutDrive
+			LoopFileName:=OutNameNoExt (OutExtension?"." OutExtension:"")
+			;	A_LoopFileName
+			LoopFileExt:=OutExtension
+			;	A_LoopFileExt
+			postfix:=LoopFileExt?("." . LoopFileExt):""
+			LoopFileDir:=OutDir
+			;	A_LoopFileDir
+			LoopFileLongPath:=LoopFileDir "\" LoopFileName
+			;	A_LoopFileLongPath
 			;A_LoopFileName: A_LoopFileExt
-			if not FileExist(A_LoopFileLongPath)
-				continue
-			if A_LoopFileName~=dataPattern{	;found
-				newFileName:=RegExReplace(A_LoopFileName,dataPattern,"")
+			;	if not FileExist(A_LoopFileLongPath)
+			;		continue
+			;	should use PathExist
+			if OutNameNoExt~=dataPattern{	;found
+				newFileNameNoExt:=RegExReplace(OutNameNoExt,dataPattern,"")
+				newFileName:=newFileNameNoExt postfix
 				if active	;then remove
 					mode:="remove"
 				else{	;skip
 					mode:="activate"
 					;~ newFileName:=""
-					postfix:=A_LoopFileExt?("." . A_LoopFileExt):""
-					newFileName:=(postfix?SubStr( newFileName,1,-StrLen(postfix)):newFileName) . separator . data . postfix
+					newFileName:=newFileNameNoExt . separator . data . postfix
+					;	postfix?SubStr( newFileName,1,-StrLen(postfix)):newFileName
 					activateFileCount++
 				}
 			}else{
 				mode:="add"
-				postfix:=A_LoopFileExt?("." . A_LoopFileExt):""
-				newFileName:=RTrim(postfix?SubStr(A_LoopFileName,1,-StrLen(postfix)):A_LoopFileName,separator) . separator . data . postfix
+				newFileName:=RTrim(OutNameNoExt,separator) . separator . data . postfix
+				;	postfix?SubStr(LoopFileName,1,-StrLen(postfix)):LoopFileName
 			}
 			if newFileName{
-				folderPath:=A_LoopFileDir . "\"
-				;{update previousFilePath
-					oldFileName:=SubStr(A_LoopFileLongPath,StrLen(folderPath)+1)
+				folderPath:=LoopFileDir . "\"
+				if((oldFileName:=LoopFileName)!=newFileName){	;update previousFilePath
+					
 					;	;previousFilePath:=StrReplace(previousFilePath,oldFileName,newFileName,OutputVarCount)
 					;	limitations: can't handle / distinguish between 'b' and 'a.b.c'
-					previousFilePath:=RegExReplace(previousFilePath,"m)(?<=[/\\])\Q" . oldFileName . "\E$",newFileName,OutputVarCount)
+					previousFilePath:=RegExReplace(previousFilePath,"m`n)(?<=[/\\])\Q" . oldFileName . "\E$",newFileName,OutputVarCount)
 					;	default newline character (`r`n)
 					;	`n: Switches from the default newline character to a solitary linefeed (`n).
 					;		also see: `r, `a
 					;	Escaping can be avoided by using \Q...\E.
 					if( not OutputVarCount=1)
 						throw, "update previousFilePath failed!"
-				;}
-				FileMove,% A_LoopFileLongPath,% folderPath . newFileName
-				updateFileCount++
-				if(ErrorLevel!=0){
+				}
+				;	FileMove,% LoopFileLongPath,% folderPath . newFileName
+				;	if(ErrorLevel!=0){
+				;	change to
+				if(not Rename(LoopFileLongPath,newFileName)){	;error
 					;https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes
 					MsgBox,,Name Tag Error, % "failed. " A_LastError ": " SystemErrorCodes[A_LastError]
 						;. (A_LastError=32?"(file used)":"")
 					;	32: The process cannot access the file because it is being used by another process.
 					;	183: Cannot create a file when that file already exists.
-					WriteLog(A_LoopFileLongPath " failed. " . A_LastError)
+					WriteLog(LoopFileLongPath " failed. " . A_LastError)
 				}else
-					WriteLog(A_LoopFileLongPath . "`t>`t" . newFileName)
+					updateFileCount++
+					,WriteLog(LoopFileLongPath . "`t>`t" . newFileName)
 			}
 		}
-	}
 	text:="Renamed " (updateFileCount?("(" mode ")")?"") " " updateFileCount " file(s)"
 	if activateFileCount
 		text.="`n Activate " activateFileCount "file(s)"
