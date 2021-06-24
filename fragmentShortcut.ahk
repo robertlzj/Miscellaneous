@@ -10,7 +10,8 @@ SetTitleMatchMode, 2
 ;	2: anywhere
 goto fragmentShortcut_End
 
-#IfWinActive Variable inspection ahk_class AutoHotkeyGUI ahk_exe InternalAHK.exe
+#IfWinActive inspection ahk_class AutoHotkeyGUI ahk_exe InternalAHK.exe
+;	Object / Variable 
 Esc::Send !{F4}
 #IfWinActive [Debugging] ahk_class SciTEWindow ahk_exe SciTE.exe
 ~LButton::
