@@ -1,8 +1,32 @@
 ﻿#NoEnv
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
-
 ExitApp
+
+if(BuildInVarAsOutputVariable){
+	;A_LoopFileLongPath:=1
+	;	Not allowed as an output variable.
+	MsgBox % A_LoopFileLongPath
+}
+if(SplitPathOfDevice){
+	path=RobertP\内部存储\cache
+	path=此电脑\RobertP\内部存储\DCIM\log.txt
+	SplitPath, path, OutFileName, OutDir, OutExtension, OutNameNoExt, OutDrive
+	MsgBox % OutFileName ", " OutDir ", " OutExtension ", " OutNameNoExt ", " OutDrive
+	;	cache, RobertP\内部存储, , cache,
+	;	log.txt, 此电脑\RobertP\内部存储\DCIM, txt, log,
+}
+if(LoopCantHandleDevice)
+	Loop, Files, RobertP\内部存储\cache
+		MsgBox % A_LoopFileLongPath
+if(staticObjectAndItsField){
+	f(){
+		static o:={f:2}
+		static v:=o.f
+		MsgBox % v
+	}
+	f()	;show 2
+}
 if(FileExistOnDevicePath)
 	MsgBox % FileExist("此电脑\RobertP\内部存储\DCIM\Camera\IMG_20210623_212002.jpg")
 if(ParseDevicePath){
@@ -17,12 +41,14 @@ if(StringOrNumberKey){
 }
 if(StaticValue_Initial){
 	globalValue:=2
+	/*
 	f(){
 		global globalValue:=3
 		static StaticValueFromBuildIn:= A_IsUnicode,StaticValueFromGolbal:=globalValue
 		MsgBox % StaticValueFromBuildIn ", " StaticValueFromGolbal	;1,
 	}
 	f()
+	*/
 }
 if(SoundPlay){
 	SoundPlay,*-1	;success
