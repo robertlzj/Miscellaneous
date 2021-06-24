@@ -213,7 +213,7 @@ handle:	;edit file name
 				;	FileMove,% LoopFileLongPath,% folderPath . newFileName
 				;	if(ErrorLevel!=0){
 				;	change to
-				if(not Rename(LoopFileLongPath,newFileName)){	;error
+				if(not Rename((item:=pathObject[LoopFileName])?item:LoopFileLongPath,newFileName)){	;error
 					;https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes
 					MsgBox,,Name Tag Error, % "failed. " A_LastError ": " SystemErrorCodes[A_LastError]
 						;. (A_LastError=32?"(file used)":"")

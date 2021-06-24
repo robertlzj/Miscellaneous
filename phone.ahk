@@ -194,22 +194,30 @@ GetSelectPath(hWnd:=""){
 			folderPath:=title1 "\" folderPath
 	}
 	path.Folder:=folderPath
-	for item in shellFolderView.SelectedItems
+	path.SelectedItems:=(selectionItems:=shellFolderView.SelectedItems)
+	for item in selectionItems{
 		;	https://docs.microsoft.com/en-us/windows/win32/shell/folderitem
-		path.Push(item.Name)
+		path.Push(name:=item.Name)
 		;	cant "item.Path", which may use device path
+		path[name]:=item
+	}
 	return path
 }
 Rename(path,name){
 	static shell:=ComObjCreate("Shell.Application")
-	namespace:=GetNamespace(path)
-	folderItem:=namespace.ParseName(path)
-	;	https://docs.microsoft.com/en-us/windows/win32/shell/folder-parsename
+	if(IsObject(path))
+		folderItem:=path
+	else{
+		namespace:=GetNamespace(path)
+		folderItem:=namespace.ParseName(path)
+		;	https://docs.microsoft.com/en-us/windows/win32/shell/folder-parsename
+	}
 	if not folderItem
 		throw A_ThisFunc ". Cant parse path """ path """"
 	try
 		folderItem.Name:=name
 		;	may prompt duplicate name
+		;	take a long time on device (DCIM\Camera)
 	catch
 		return false
 	return true
