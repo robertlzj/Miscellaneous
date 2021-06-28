@@ -53,6 +53,7 @@ goto ReferLink_End
 #If not A_CaretX && WinActive("ahk_exe explorer.exe")
 ReferLink!c:	;switch between current select or final source of select as source for operation follow-up
 ReferLink~^c:	;same as above but silent
+	;todo: only support single file
 ReferLink!x:	;{abstract file
 	isSilent:=A_ThisHotkey~="~" or A_ThisHotkey="!x"	;~^c
 	gosub GetSourceFilePath
@@ -248,6 +249,7 @@ Toggle_Mode:
 		}
 		SoundPlay,% sourceMode="Final"?"ClickDouble.mp3":"Click.mp3",1
 	}else throw "Should not execute here."
+		;	bug: when select multiple files and re-search refer by click !z two times.
 	sourceFilePath:=sourceMode="Direct"?fileSelected:finalSource
 	if(not isSilent)	;~^c,	Silent
 		TrayTip(sourceFilePath,sourceMode " Source:",0x10)
