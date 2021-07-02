@@ -2,6 +2,7 @@
 /* Use mouse to select, release mouse button with LControl pressed will copy and paste selection to QQNotepad.
 */
 #Include dataFromToClipboard.ahk
+#Include HotKey_WhenEditInSciTE.ahk
 Menu, Tray, Icon, SC.ico
 while(true){
 	currentActiveWindow:=WinExist("A") 
@@ -12,7 +13,7 @@ while(true){
 	OutputDebug, lastActiveWindow is: %lastActiveWindow%.
 }
 return
-~LButton::
+~*LButton::
 	OutputDebug, ~LButton
 	p:=A_TickCount
 	return
@@ -21,6 +22,7 @@ return
 	OutputDebug, ~*LButton up with LControl down
 	if(A_TickCount-p<200){	;click
 		OutputDebug, skip click.
+		LButtonUpWithLControlDown:=false
 		return
 	}
 	LButtonUpWithLControlDown:=true
