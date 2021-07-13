@@ -64,12 +64,21 @@ ReferLink!x:	;{abstract file
 			gosub GetSourceFilePath
 		if(finalSource=fileSelected){
 			Default:=sourceFileNameWithoutExt
+			FileCreationTime:=targetIndex:=e
 			while true
 			{
+				SpecifyFileId:
 				InputBox, OutputVar,,Source File Name: %sourceFileName% `n%prompt%Set Abstract Identifier (without extension),,,160,,,,,% Default
 				referFileNameWithoutExt:=OutputVar
-				if ErrorLevel ;cancel
-					goto Abort
+				if ErrorLevel{ ;cancel
+					if FileCreationTime
+						goto Abort
+					FileGetTime, FileCreationTime ,% sourceFilePath, C
+					if ErrorLevel	;failed
+						FileCreationTime:=A_Now
+					Default:=referFileNameWithoutExt:=FileCreationTime
+					goto SpecifyFileId
+				}
 				referFolderPath:=sourceDirPath "\_ReferStorage_"
 				referFilePath:=referFolderPath "\" referFileNameWithoutExt "." sourceFileExtension
 				if not FileExist(referFilePath){
@@ -77,7 +86,8 @@ ReferLink!x:	;{abstract file
 					break
 				}
 				prompt:="Identifier Name Exist.`n "
-				Default:=referFileNameWithoutExt
+				targetIndex++
+				Default:=referFileNameWithoutExt "-" targetIndex
 			}
 			Default:=e
 			;{Move
@@ -111,7 +121,7 @@ ReferLink!x:	;{abstract file
 						MsgBox %extraMapFilePath% exist.
 						goto Abort
 					}
-					HandleSpaceInPath(extraMapFilePath)
+					extraMapFilePath:=HandleSpaceInPath(extraMapFilePath)
 					RunWaitOne("ln --symbolic " . referFilePathWithQuotation . " " . extraMapFilePath)
 					extraMapFilePath:=e
 				}

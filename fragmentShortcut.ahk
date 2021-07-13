@@ -60,6 +60,8 @@ $Delete::Send {Enter}
 $Delete::Send {Enter}	;}
 
 #IfWinActive	ahk_exe PotPlayerMini64.exe	;{
+#IfWinActive 播放列表 ahk_exe PotPlayerMini64.exe
+Del::
 #IfWinActive ahk_class PotPlayer64 ahk_exe PotPlayerMini64.exe
 	Del::
 	PotPlayer_Del:
