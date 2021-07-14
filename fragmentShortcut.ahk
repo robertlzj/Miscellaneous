@@ -67,9 +67,10 @@ Del::
 	PotPlayer_Del:
 		Send +{Del}	;by default, del only apply to playlists
 		WinWaitActive,删除 ahk_class #32770, 确实要, 1
-		if ErrorLevel
-			throw "WinWaitActive failed."
-		gosub DelFileWithLink_ExternalTrigger
+		if not ErrorLevel
+			;~ throw "WinWaitActive failed."
+		;~ else
+			gosub DelFileWithLink_ExternalTrigger
 		return
 	;	#IfWinActive 删除文件 ahk_class #32770 ahk_exe PotPlayerMini64.exe
 	;		$Shift::
