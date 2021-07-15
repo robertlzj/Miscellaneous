@@ -67,8 +67,7 @@ ReferLink!x:	;{abstract file
 			FileCreationTime:=targetIndex:=e
 			while true
 			{
-				SpecifyFileId:
-				InputBox, OutputVar,,Source File Name: %sourceFileName% `n%prompt%Set Abstract Identifier (without extension),,,160,,,,,% Default
+				InputBox, OutputVar,,Source File Name: %sourceFileName% `n%prompt%Set Abstract Identifier (without extension),,,160,,,,,% Default (targetIndex?"-" targetIndex:"")
 				referFileNameWithoutExt:=OutputVar
 				if ErrorLevel{ ;cancel
 					if FileCreationTime
@@ -77,17 +76,24 @@ ReferLink!x:	;{abstract file
 					if ErrorLevel	;failed
 						FileCreationTime:=A_Now
 					Default:=referFileNameWithoutExt:=FileCreationTime
-					goto SpecifyFileId
+					OutputVar:=e
 				}
+				VerifyId:
 				referFolderPath:=sourceDirPath "\_ReferStorage_"
 				referFilePath:=referFolderPath "\" referFileNameWithoutExt "." sourceFileExtension
 				if not FileExist(referFilePath){
-					prompt:=e
-					break
+					if OutputVar{
+						prompt:=e
+						break
+					}else
+						continue
 				}
 				prompt:="Identifier Name Exist.`n "
 				targetIndex++
-				Default:=referFileNameWithoutExt "-" targetIndex
+				if not OutputVar{
+					referFileNameWithoutExt:=Default "-" targetIndex
+					goto VerifyId
+				}
 			}
 			Default:=e
 			;{Move
