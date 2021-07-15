@@ -37,16 +37,20 @@ DelFileWithLink_ExternalTrigger:
 	ControlGetText, fileToBeDelete, Static4
 	;	"Static4": file name to be delete.
 	;MsgBox file to be delete is: %Output%	;debug
-	if not ((founds:=Search("wfn:" fileToBeDelete)) and (count:=founds.Count())=1){
-		MsgBox There are multiple files (%count%). Cant detect which one is being delete.
-		return
+	if (founds:=Search("wfn:" fileToBeDelete)){
+		;	wont find hardlink.
+		if((count:=founds.Count())>1){
+			MsgBox There are multiple files (%count%). Cant detect which one is being delete.
+			return
+		}
+		_2:=(_1:=founds._NewEnum()).next(path)
+		;	;selectfiles:=can't founds[1]
+		RegExMatch(path,"O)(.+\\)(.+?)$",output)
+		folder:=output[1],selectfiles:=output[2]
+		;~ MsgBox Try to delete %folder%, %selectfiles%	;test
+		goto DelFileWithLink_HandleDelete
 	}
-	_2:=(_1:=founds._NewEnum()).next(path)
-	;	;selectfiles:=can't founds[1]
-	RegExMatch(path,"O)(.+\\)(.+?)$",output)
-	folder:=output[1],selectfiles:=output[2]
-	;~ MsgBox Try to delete %folder%, %selectfiles%	;test
-	goto DelFileWithLink_HandleDelete	;}
+	return	;}
 ;}
 #If not A_CaretX && (WinActive("ahk_exe explorer.exe") || (not WinActive("É¾³ý") && WinActive("ahk_class #32770")))
 ;	#32770: open / save..
