@@ -1,8 +1,20 @@
 ﻿#NoEnv
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
+
 ExitApp
 
+/*;线程启动有先后顺序，后启动的优先，当前线程结束后才可以继续前一个线程。
+	#IfWinActive test.ahk
+	1::
+		MsgBox 1a
+		MsgBox 1b
+		return
+	2::
+		MsgBox 2a
+		MsgBox 2b
+		return
+*/
 if(BuildInVarAsOutputVariable){
 	;A_LoopFileLongPath:=1
 	;	Not allowed as an output variable.
