@@ -8,7 +8,30 @@
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
+#MaxThreadsPerHotkey, 2
 goto fragmentShortcut_End
+
+#If not WinBarView	;{PowerToys
+~LWin::
+	FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
+	;~ FileAppend % A_PriorHotkey ": " A_TimeSincePriorHotkey "`n", *
+	if(A_PriorHotkey="~LWin"  and A_TimeSincePriorHotkey<600){
+		;	repeate key after 500ms
+		FileAppend % A_TickCount ": On`n", *
+		WinBarView:=true
+		Send #+/ 
+	}
+	return
+#If WinBarView
+$LWin up::
+	FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
+	if WinBarView{
+		WinBarView:=false
+		Send {Blind}{Esc}{LWin up}
+		;	need "{LWin up}", or Start Menu will be triggered
+		;	maybe related with: #MenuMaskKey
+	}
+	return	;}
 
 #IfWinActive inspection ahk_class AutoHotkeyGUI ahk_exe InternalAHK.exe
 ;	Object / Variable 
