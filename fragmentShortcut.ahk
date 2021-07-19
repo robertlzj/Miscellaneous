@@ -104,16 +104,16 @@ Del::
 	;Abstract.
 	;	see "#IfWinActive, 删除 ahk_class #32770, 确实要“
 	;Set by Logitech 游戏软件
-	^i::	;click
+	^i up::	;click
 		;~ if(A_ThisHotkey=A_PriorHotkey and A_TimeSincePriorHotkey<300)
 			;~ Send {Del}
 		;~ else
 			Send {PGDN}
 		return
-	^b::	;long click
+	^b up::	;long click
 		Send {PGUP}
 		return
-	^u::	;press
+	^u up::	;press
 		; MsgBox % A_ThisHotkey	;test
 		goto PotPlayer_Del
 #IfWinActive fragmentShortcut.ahk ahk_class #32770 ahk_exe AutoHotkey.exe, delete all entrance?
