@@ -8,30 +8,61 @@
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
-#MaxThreadsPerHotkey, 2
+
 goto fragmentShortcut_End
 
-#If not WinBarView	;{PowerToys
-~LWin::
-	FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
-	;~ FileAppend % A_PriorHotkey ": " A_TimeSincePriorHotkey "`n", *
-	if(A_PriorHotkey="~LWin"  and A_TimeSincePriorHotkey<600){
-		;	repeate key after 500ms
-		FileAppend % A_TickCount ": On`n", *
-		WinBarView:=true
-		Send #+/ 
-	}
-	return
-#If WinBarView
-$LWin up::
-	FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
-	if WinBarView{
-		WinBarView:=false
-		Send {Blind}{Esc}{LWin up}
-		;	need "{LWin up}", or Start Menu will be triggered
-		;	maybe related with: #MenuMaskKey
-	}
-	return	;}
+;{PowerToys
+	#If not WinBarView
+	~LWin::
+		FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
+		;~ FileAppend % A_PriorHotkey ": " A_TimeSincePriorHotkey "`n", *
+		Input, OutputVar, L1 M T0.2 V
+		if(ErrorLevel="Timeout" and A_ThisHotkey!="$LWin up"){
+		;~ if(A_PriorHotkey="~LWin"  and A_TimeSincePriorHotkey<600){
+		;~ ;	repeate key after 500ms
+		;	group 1
+			FileAppend % A_TickCount ": On`n", *
+			WinBarView:=true
+			Send #+/ 
+		}
+		return
+	;~ #If WinBarView
+	;	group 1
+	#If
+	$LWin up::
+		FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
+		if WinBarView{
+			WinBarView:=false
+			Send {Blind}{Esc}{LWin up}
+			;	need "{LWin up}", or Start Menu will be triggered
+			;	maybe related with: #MenuMaskKey
+		}
+		return
+	/*	old method
+		#MaxThreadsPerHotkey, 2
+		#If not WinBarView	;{PowerToys
+		~LWin::
+			FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
+			;~ FileAppend % A_PriorHotkey ": " A_TimeSincePriorHotkey "`n", *
+			if(A_PriorHotkey="~LWin"  and A_TimeSincePriorHotkey<600){
+				;	repeate key after 500ms
+				FileAppend % A_TickCount ": On`n", *
+				WinBarView:=true
+				Send #+/ 
+			}
+			return
+		#If WinBarView
+		$LWin up::
+			FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
+			if WinBarView{
+				WinBarView:=false
+				Send {Blind}{Esc}{LWin up}
+				;	need "{LWin up}", or Start Menu will be triggered
+				;	maybe related with: #MenuMaskKey
+			}
+			return	;}
+	*/
+;}
 
 #IfWinActive inspection ahk_class AutoHotkeyGUI ahk_exe InternalAHK.exe
 ;	Object / Variable 
