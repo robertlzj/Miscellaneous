@@ -1,4 +1,4 @@
-﻿#NoEnv
+﻿	#NoEnv
 #SingleInstance,Force
 #Include dataFromToClipboard.ahk
 #Include HotKey_WhenEditInSciTE.ahk
@@ -11,8 +11,19 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#If WinActive("ahk_exe zbstudio.exe ahk_class wxWindowNR") and ControlHasFocus()~="wxWindowNR" and ClassUnderMouse()~="wxWindowNR"
+;	$!`::Send !``
+;	cant
+$!`::
+	;~ ToolTip $!`
+	ControlSend ,,!``,ahk_exe zbstudio.exe ahk_class wxWindowNR
+	;	wxStyledTextCtrl
+	;~ ToolTip % ErrorLevel
+	return
+#If
+
 ;{PowerToys
-	#If not WinBarView
+	#If not WinBarView and false
 	~LWin::
 		FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
 		;~ FileAppend % A_PriorHotkey ": " A_TimeSincePriorHotkey "`n", *
@@ -28,7 +39,7 @@ goto fragmentShortcut_End
 		return
 	;~ #If WinBarView
 	;	group 1
-	#If
+	#If false
 	$LWin up::
 		FileAppend % A_TickCount ": " A_ThisHotkey "`n", *
 		if WinBarView{
@@ -223,6 +234,10 @@ Del::
 ClassUnderMouse(){
 	MouseGetPos , OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
 	return OutputVarControl
+}
+ControlHasFocus(){
+	ControlGetFocus, OutputVar
+	return OutputVar
 }
 #IfWinActive ahk_exe msedge.exe	;{
 ~^d::	;favorite
