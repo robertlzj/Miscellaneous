@@ -13,8 +13,13 @@ CoordMode, Mouse, Screen
 
 HotkeyMap:=[1,2,3,4,5,"q","w","e","r","t","a","s","d","f","g"]
 SubMenu_Index:=1
+HotkeyIndex_Menu:={}
+;	[menuId]=item count
+method:=2
+;	1: basic funtion test
+;	2: customer menu
 
-;{	construct menu
+if(method=2){	;construct menu
 	#Include *i Menu_IdContent.ahk
 	#Include *i Menu_IndexId.ahk
 	if not Menu_IndexId
@@ -25,7 +30,8 @@ SubMenu_Index:=1
 		Loop % Count_Item_RootMenu
 			Menu_IndexId[A_Index]:=A_Index
 	}
-	Count_Show_Item_RootMenu:=Min(Count_Item_RootMenu,15)
+	Count_Show_Item_Menu:=Min(Count_Item_RootMenu,15)
+	MenuStruct_MenuName:={}
 	ConstructMenu()
 	goto Skip_MenuHandle
 	MenuHandle:
@@ -55,23 +61,23 @@ SubMenu_Index:=1
 		}
 		if(ModiferState~="CapsLock" or ModiferState~="Ctrl"){	;toggle pin
 			item.pin:=not item.pin
-			Menu, MyMenu, ToggleCheck, %A_ThisMenuItem%
+			Menu, % A_ThisMenu, ToggleCheck, %A_ThisMenuItem%
 			Modified:=true
 		}
 		if Modified{
 			Modified:=false
-			Menu, MyMenu, DeleteAll
+			Menu, % A_ThisMenu, DeleteAll
 			ConstructMenu()
 		}
 		default:=newIndex?(newIndex "&"):A_ThisMenuItem
-		Menu, MyMenu, Default, %default%
+		Menu, % A_ThisMenu, Default, %default%
 		ShowMenu()
 		return
 	;MenuTrigger
 	
 	Skip_MenuHandle:
-;}
-if(test){
+}else
+if(method=1){
 	;{Create menu
 		; Create the popup menu by adding some items to it.
 		Menu, MyMenu, Add, &1 Item1, MenuHandler
@@ -204,6 +210,8 @@ Restore(){
 	ShowMenu()
 }
 ShowMenu(myMenuName:=""){
+	global HotkeyIndex_Menu
+	HotkeyIndex_Menu:={}	;reset
 	static MouseX, MouseY,MenuName
 	if(myMenuName){
 		MenuName:=myMenuName
@@ -223,6 +231,7 @@ FindFirstUnpinItemIndex(from:=1){
 	return index
 }
 ShiftItemTopAfterPined(indexToShift){
+	;	apply to root menu, didn't support sub menu?
 	global Menu_IndexId
 	index_unpin:=0
 	index_new:=""
@@ -241,20 +250,35 @@ ShiftItemTopAfterPined(indexToShift){
 	}
 	return index_new
 }
-ConstructMenu(menuStruct:=""){
-	global Count_Show_Item_RootMenu,Menu_IdContent,Menu_IndexId,HotkeyMap
-	Loop % Count_Show_Item_RootMenu {
+ConstructMenu(menuStruct:="",menuId:=""){
+	global Count_Show_Item_Menu,Menu_IdContent,Menu_IndexId
+	Loop % Count_Show_Item_Menu {
 		item:=Menu_IdContent[Menu_IndexId[A_Index]]
-		MenuItemName:="&" hotkeyMap[A_Index] " " item.Name
-		type:=(IsLabel(item.Handle) or IsFunc(item.Handle))?"handle":"subMenu"
-		if(type="subMenu" and not MenuStruct_MenuName[item]){
-			
-		}
-		;Menu, MyMenu, Add, % MenuItemName,% item.subMenu?(":" item.Handle):"MenuHandle",+Radio
-		Menu, MyMenu, Add, % MenuItemName,% type="handle"?item.Handle:(":" MenuStruct_MenuName[item]),+Radio
-		if item.Pin
-			Menu, MyMenu, Check, % MenuItemName
+		ConstructItem(item)
 	}
+}
+ConstructItem(item,menuId:=""){
+	global HotkeyMap,MenuStruct_MenuName,HotkeyIndex_Menu
+	static freeMenuId=1
+	hotkeyIndex:=HotkeyIndex_Menu[menuId]+1
+	hotkeyIndex:=HotkeyIndex_Menu[menuId]:=hotkeyIndex?hotkeyIndex:1
+	Hotkey:=hotkeyIndex<HotkeyMap.Count()?("&" hotkeyMap[hotkeyIndex] " "):""
+	MenuItemName:=Hotkey item.Name
+	type:=(IsLabel(item.Handle) or IsFunc(item.Handle))?"handle":"subMenu"
+	;	label, handle -> handle
+	;	object -> subMenu
+	if(type="subMenu" and not MenuStruct_MenuName[item]){
+		subMenuId:=MenuStruct_MenuName[item]:=menuId "_" freeMenuId++
+		Loop,% item.Handle.Count(){
+			ConstructItem(item.Handle[A_Index],subMenuId)
+		}
+	}
+	;Menu, MyMenu, Add, % MenuItemName,% item.subMenu?(":" item.Handle):"MenuHandle",+Radio
+	Menu, MyMenu%menuId%, Add, % MenuItemName,% type="handle"?"MenuHandle":(":MyMenu"  MenuStruct_MenuName[item]),+Radio
+	;	Error:  Submenu must not contain its parent menu.
+	;	item.Handle
+	if item.Pin
+		Menu, MyMenu%menuId%, Check, % MenuItemName
 }
 Skip_To_End:
 _:=_
