@@ -11,6 +11,146 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+;{一键发送文件到文件夹
+#Include SelectOrReadSelection.ahk
+#If WinActive("F:\备份\C-Users-RobertL-Pictures-Samsung Gallery Downloads\DCIM\Camera\")
+F1::
+	selections:=SelectOrReadSelection()
+	folderPath:=""
+	Loop, Parse, selections, `n
+	{
+		;(folderPath?filePath:folderPath):=A_LoopField
+		if folderPath{
+			filePath:=A_LoopField
+			FileMove,% folderPath filePath, F:\备份\C-Users-RobertL-Pictures-Samsung Gallery Downloads\DCIM\Camera\已命名\
+			if ErrorLevel
+				MsgBox MoveFile Error.
+		}else
+			folderPath:=A_LoopField
+	}
+	return
+#If
+;}
+
+;~ #If
+;~ F3::
+	;~ FileToClipboard("C:\Users\RobertL\Desktop\Photshop快速导出.png")
+	;~ return
+#IfWinActive ahk_exe Photoshop.exe
+~F2::
+	CurrentTime:=A_Now
+	path=C:\Users\RobertL\Desktop\Photshop快速导出.png
+	Loop{
+		Sleep 200
+		FileGetTime, ModificationTime, % path, M
+		if(A_Now-CurrentTime>2){
+			MsgBox Failed to get photoshop export file
+			return
+		}
+	}Until ModificationTime-CurrentTime<5
+	Clipboard:=""
+	FileToClipboard(path)
+	;~ Send !{Tab}
+	;~ Sleep 200
+	;~ Send ^v
+	;~ FileDelete, % path
+	;~ if(ErrorLevel!=0)
+		;~ MsgBox Delete file Failed
+	return
+
+;https://autohotkey.com/board/topic/23162-how-to-copy-a-file-to-the-clipboard/
+FileToClipboard1(PathToCopy){
+    ; Expand to full path:
+    Loop, %PathToCopy%, 1
+        PathToCopy := A_LoopFileLongPath
+     ; Allocate some movable memory to put on the clipboard.
+    ; This will hold a DROPFILES struct, the string, and an (extra) null terminator
+    ; 0x42 = GMEM_MOVEABLE(0x2) | GMEM_ZEROINIT(0x40)
+    hPath := DllCall("GlobalAlloc","uint",0x42,"uint",StrLen(PathToCopy)+22)
+    
+    ; Lock the moveable memory, retrieving a pointer to it.
+    pPath := DllCall("GlobalLock","uint",hPath)
+    
+    NumPut(20, pPath+0) ; DROPFILES.pFiles = offset of file list
+    
+    ; Copy the string into moveable memory.
+    DllCall("lstrcpy","uint",pPath+20,"str",PathToCopy)
+    
+    ; Unlock the moveable memory.
+    DllCall("GlobalUnlock","uint",hPath)
+    
+    DllCall("OpenClipboard","uint",0)
+    ; Empty the clipboard, otherwise SetClipboardData may fail.
+    DllCall("EmptyClipboard")
+    ; Place the data on the clipboard. CF_HDROP=0xF
+    DllCall("SetClipboardData","uint",0xF,"uint",hPath)
+    DllCall("CloseClipboard")
+}
+;https://autohotkey.com/board/topic/23162-how-to-copy-a-file-to-the-clipboard/page-4#entry463462
+FileToClipboard(PathToCopy,Method="copy")
+{
+   FileCount:=0
+   PathLength:=0
+
+   ; Count files and total string length
+   Loop,Parse,PathToCopy,`n,`r
+      {
+      FileCount++
+      PathLength+=StrLen(A_LoopField)
+      }
+
+   pid:=DllCall("GetCurrentProcessId","uint")
+   hwnd:=WinExist("ahk_pid " . pid)
+   ; 0x42 = GMEM_MOVEABLE(0x2) | GMEM_ZEROINIT(0x40)
+   hPath := DllCall("GlobalAlloc","uint",0x42,"uint",20 + (PathLength + FileCount + 1) * 2,"UPtr")
+   pPath := DllCall("GlobalLock","UPtr",hPath)
+   NumPut(20,pPath+0),pPath += 16 ; DROPFILES.pFiles = offset of file list
+   NumPut(1,pPath+0),pPath += 4 ; fWide = 0 -->ANSI,fWide = 1 -->Unicode
+   Offset:=0
+   Loop,Parse,PathToCopy,`n,`r ; Rows are delimited by linefeeds (`r`n).
+      offset += StrPut(A_LoopField,pPath+offset,StrLen(A_LoopField)+1,"UTF-16") * 2
+
+   DllCall("GlobalUnlock","UPtr",hPath)
+   DllCall("OpenClipboard","UPtr",hwnd)
+   DllCall("EmptyClipboard")
+   DllCall("SetClipboardData","uint",0xF,"UPtr",hPath) ; 0xF = CF_HDROP
+
+   ; Write Preferred DropEffect structure to clipboard to switch between copy/cut operations
+   ; 0x42 = GMEM_MOVEABLE(0x2) | GMEM_ZEROINIT(0x40)
+   mem := DllCall("GlobalAlloc","uint",0x42,"uint",4,"UPtr")
+   str := DllCall("GlobalLock","UPtr",mem)
+
+   if (Method="copy")
+      DllCall("RtlFillMemory","UPtr",str,"uint",1,"UChar",0x05)
+   else if (Method="cut")
+      DllCall("RtlFillMemory","UPtr",str,"uint",1,"UChar",0x02)
+   else
+      {
+      DllCall("CloseClipboard")
+      return
+      }
+
+   DllCall("GlobalUnlock","UPtr",mem)
+
+   cfFormat := DllCall("RegisterClipboardFormat","Str","Preferred DropEffect")
+   DllCall("SetClipboardData","uint",cfFormat,"UPtr",mem)
+   DllCall("CloseClipboard")
+   return
+   }
+;https://autohotkey.com/board/topic/23162-how-to-copy-a-file-to-the-clipboard/#entry151037
+ImageToClipboard(Filename)
+{
+    hbm := DllCall("LoadImage","uint",0,"str",Filename,"uint",0,"int",0,"int",0,"uint",0x10)
+    if !hbm
+        return
+    DllCall("OpenClipboard","uint",0)
+    DllCall("EmptyClipboard")
+    ; Place the data on the clipboard. CF_BITMAP=0x2
+    if ! DllCall("SetClipboardData","uint",0x2,"uint",hbm)
+        DllCall("DeleteObject","uint",hbm)
+    DllCall("CloseClipboard")
+}
+
 #If WinActive("ahk_exe zbstudio.exe ahk_class wxWindowNR") and ControlHasFocus()~="wxWindowNR" and ClassUnderMouse()~="wxWindowNR"
 ;	$!`::Send !``
 ;	cant
