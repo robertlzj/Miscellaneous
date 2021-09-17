@@ -2,6 +2,47 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
+a:={}
+b:="b"
+MsgBox % a[b]++
+MsgBox % a[b]
+ExitApp
+
+b:=""
+a:={(""):0}
+MsgBox % a[b]+1
+ExitApp
+
+a:=1
+(a?b:a):=2
+MsgBox % a b
+a:=0
+(a?b:a):=3
+MsgBox % a b
+ExitApp
+
+#If
+;~ F3::
+	;~ WinWaitNotActive,‬ ahk_exe SciTE.exe,,1
+	;~ MsgBox % ErrorLevel
+	;~ return
+#IfWinActive ahk_exe Photoshop.exe
+~F2::
+	Sleep 200
+	Clipboard:=""
+	ClipWait,2
+	if ErrorLevel
+		MsgBox failed
+	WinActivate, ‪ahk_exe WINWORD.EXE
+	;	20210806·保密车间北跨清理.docx‬ failed
+	/* 失效
+		WinWaitActive,‬ ahk_exe WINWORD.EXE,,1
+		if ErrorLevel
+			MsgBox WinWaitActive failed
+	*/
+	Sleep 100
+	Send ^v
+	return
 ExitApp
 
 /*;线程启动有先后顺序，后启动的优先，当前线程结束后才可以继续前一个线程。
