@@ -11,6 +11,102 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#IfWinNotExist Active Window Info	;{
+~#a::
+	if false{	;failed
+		WinWait,操作中心 ahk_class Windows.UI.Core.CoreWindow ahk_exe ShellExperienceHost.exe,,2
+		if ErrorLevel	;always timeout
+			return
+	}else{
+		WinWaitActive ,操作中心 ahk_class Windows.UI.Core.CoreWindow ahk_exe ShellExperienceHost.exe,,2
+		if ErrorLevel
+			return
+	}
+	originalMode:=A_CoordModeMouse
+	CoordMode, Mouse, Screen
+	MouseGetPos,mouse_x,mouse_y
+	MouseMove, 1380, 742
+	if false{	;failed
+		KeyWait,Esc ,D L T3
+		if not ErrorLevel	;often timeout
+			MouseMove,mouse_x,mouse_y
+	}else{
+		activeWinA:=A_TickCount
+	}
+	CoordMode, Mouse, % originalMode
+	originalMode:=""
+	return
+#If A_TickCount-activeWinA<2000
+~Esc::
+	originalMode:=A_CoordModeMouse
+	CoordMode, Mouse, Screen
+	MouseMove,mouse_x,mouse_y
+	CoordMode, Mouse, % originalMode
+	originalMode:=""
+	return
+;}
+
+#If not MousePosition_PressAndUnRelease
+~RControl::
+	MousePosition_PressAndUnRelease:=true
+restoreMousePostion:
+	offset:=30
+	originalMode:=A_CoordModeMouse
+	CoordMode, Mouse, Screen
+	MouseGetPos,MousePosition_current_x,MousePosition_current_y
+	if false{
+		ToolTip % "last: " . MousePosition_last_x ","  MousePosition_last_y ",`n"
+		 . "current: " . MousePosition_current_x ","  MousePosition_current_y ",`n"
+		 . "fix: " . MousePosition_fix_x ","  MousePosition_fix_y ",`n"
+		 . (MousePosition_last_x-MousePosition_current_x)**2 "," MousePosition_last_y-MousePosition_current_y ",`n"
+		 . Sqrt((MousePosition_last_x-MousePosition_current_x)**2+(MousePosition_last_y-MousePosition_current_y)**2)
+		;	cant use ^ as power
+	}
+	if(MousePosition_last_x){
+		if(MousePosition_fix_x and Sqrt((MousePosition_fix_x-MousePosition_current_x)**2+(MousePosition_fix_y-MousePosition_current_y)**2)>offset){
+			MousePosition_previous_x:=MousePosition_fix_x
+			MousePosition_previous_y:=MousePosition_fix_y
+		}else if(Sqrt((MousePosition_last_x-MousePosition_current_x)**2+(MousePosition_last_y-MousePosition_current_y)**2)>offset){
+			MousePosition_previous_x:=MousePosition_last_x
+			MousePosition_previous_y:=MousePosition_last_y
+		}
+		if(MousePosition_previous_x){
+			MouseMove,MousePosition_previous_x,MousePosition_previous_y
+			MousePosition_last_x:=MousePosition_previous_x
+			MousePosition_last_y:=MousePosition_previous_y
+			MousePosition_previous_x:=MousePosition_current_x
+			MousePosition_previous_y:=MousePosition_current_y
+		}else{
+			MousePosition_last_x:=MousePosition_current_x
+			MousePosition_last_y:=MousePosition_current_y
+		}
+	}else{
+		MousePosition_last_x:=MousePosition_current_x
+		MousePosition_last_y:=MousePosition_current_y
+	}
+	CoordMode, Mouse, % originalMode
+	originalMode:=""
+	return
+#If MousePosition_PressAndUnRelease
+~RControl up::
+	MousePosition_PressAndUnRelease:=false
+	if false
+	ToolTip % A_TimeSincePriorHotkey "," A_PriorHotkey "`n"
+		. "Fix: " . MousePosition_fix_x "," MousePosition_fix_y
+	if(A_TimeSincePriorHotkey<300)
+		return
+	if(MousePosition_previous_x){
+		gosub restoreMousePostion
+	}
+	if(A_TimeSincePriorHotkey>800){
+		MousePosition_fix_x:=0
+		MousePosition_fix_y:=0
+	}else{
+		MousePosition_fix_x:=MousePosition_last_x
+		MousePosition_fix_y:=MousePosition_last_y
+	}
+	return
+	
 ;{一键发送文件到文件夹
 #Include SelectOrReadSelection.ahk
 #If WinActive("F:\备份\C-Users-RobertL-Pictures-Samsung Gallery Downloads\DCIM\Camera\")
