@@ -47,6 +47,9 @@ goto fragmentShortcut_End
 ;}
 
 #If not MousePosition_PressAndUnRelease
+CalcDistance(x1,y1,x2,y2){
+	return Sqrt((x1-x2)**2+(y1-y2)**2)
+}
 ~RControl::
 	MousePosition_PressAndUnRelease:=true
 restoreMousePostion:
@@ -54,19 +57,26 @@ restoreMousePostion:
 	originalMode:=A_CoordModeMouse
 	CoordMode, Mouse, Screen
 	MouseGetPos,MousePosition_current_x,MousePosition_current_y
+	Sleep 150
+	;	enough to wait to get new mouse positino set by tobii
+	MouseGetPos,MousePosition_wait_x,MousePosition_wait_y
 	if false{
 		ToolTip % "last: " . MousePosition_last_x ","  MousePosition_last_y ",`n"
 		 . "current: " . MousePosition_current_x ","  MousePosition_current_y ",`n"
 		 . "fix: " . MousePosition_fix_x ","  MousePosition_fix_y ",`n"
 		 . (MousePosition_last_x-MousePosition_current_x)**2 "," MousePosition_last_y-MousePosition_current_y ",`n"
-		 . Sqrt((MousePosition_last_x-MousePosition_current_x)**2+(MousePosition_last_y-MousePosition_current_y)**2)
+		 . CalcDistance(MousePosition_last_x,MousePosition_last_y,MousePosition_current_x,MousePosition_current_y) ",`n"
+		 . MousePosition_current_x ", " MousePosition_current_y "; " MousePosition_wait_x ", " MousePosition_wait_y
 		;	cant use ^ as power
 	}
+	if(not (MousePosition_wait_x=719 and MousePosition_wait_y=450)
+		and CalcDistance(MousePosition_current_x,MousePosition_current_y,MousePosition_wait_x,MousePosition_wait_y)>offset)
+		return
 	if(MousePosition_last_x){
-		if(MousePosition_fix_x and Sqrt((MousePosition_fix_x-MousePosition_current_x)**2+(MousePosition_fix_y-MousePosition_current_y)**2)>offset){
+		if(MousePosition_fix_x and CalcDistance(MousePosition_fix_x,MousePosition_fix_y,MousePosition_current_x,MousePosition_current_y)>offset){
 			MousePosition_previous_x:=MousePosition_fix_x
 			MousePosition_previous_y:=MousePosition_fix_y
-		}else if(Sqrt((MousePosition_last_x-MousePosition_current_x)**2+(MousePosition_last_y-MousePosition_current_y)**2)>offset){
+		}else if(CalcDistance(MousePosition_last_x,MousePosition_last_y,MousePosition_current_x,MousePosition_current_y)>offset){
 			MousePosition_previous_x:=MousePosition_last_x
 			MousePosition_previous_y:=MousePosition_last_y
 		}
@@ -93,7 +103,7 @@ restoreMousePostion:
 	if false
 	ToolTip % A_TimeSincePriorHotkey "," A_PriorHotkey "`n"
 		. "Fix: " . MousePosition_fix_x "," MousePosition_fix_y
-	if(A_TimeSincePriorHotkey<300)
+	if(A_TimeSincePriorHotkey<400)
 		return
 	if(MousePosition_previous_x){
 		gosub restoreMousePostion
