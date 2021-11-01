@@ -69,8 +69,9 @@ restoreMousePostion:
 		 . MousePosition_current_x ", " MousePosition_current_y "; " MousePosition_wait_x ", " MousePosition_wait_y
 		;	cant use ^ as power
 	}
-	if(not (MousePosition_wait_x=719 and MousePosition_wait_y=450)
-		and CalcDistance(MousePosition_current_x,MousePosition_current_y,MousePosition_wait_x,MousePosition_wait_y)>offset)
+	controledByTobii:=not (MousePosition_wait_x=719 and MousePosition_wait_y=450)
+		and CalcDistance(MousePosition_current_x,MousePosition_current_y,MousePosition_wait_x,MousePosition_wait_y)>offset
+	if(controledByTobii)
 		return
 	if(MousePosition_last_x){
 		if(MousePosition_fix_x and CalcDistance(MousePosition_fix_x,MousePosition_fix_y,MousePosition_current_x,MousePosition_current_y)>offset){
@@ -100,6 +101,8 @@ restoreMousePostion:
 #If MousePosition_PressAndUnRelease
 ~RControl up::
 	MousePosition_PressAndUnRelease:=false
+	if controledByTobii
+		return
 	if false
 	ToolTip % A_TimeSincePriorHotkey "," A_PriorHotkey "`n"
 		. "Fix: " . MousePosition_fix_x "," MousePosition_fix_y
