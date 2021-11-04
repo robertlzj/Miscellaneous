@@ -115,6 +115,7 @@ restoreMousePostion:
 		MousePosition_fix_x:=0
 		MousePosition_fix_y:=0
 	}else{
+		SoundPlay,Click.mp3
 		MousePosition_fix_x:=MousePosition_last_x
 		MousePosition_fix_y:=MousePosition_last_y
 	}
