@@ -11,6 +11,31 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#If A_CaretX	;{..→:
+~NumpadDot::
+	if(A_PriorHotkey="~NumpadDot" and A_TimeSincePriorHotkey<200)
+		Send % "{BS 2}{ASC " . Asc(":") . "}"
+	return	;}
+#If ;{ NumLock→Del
+NumLock::
+	;~ ToolTip % GetKeyState("NumLock","T")
+	if(not NumLockDown  and A_CaretX)
+		NumLockDown:=true
+	return
+#If A_CaretX and NumLockDown
+NumLock up::
+	p:=GetKeyState("NumLock","T")
+	NumLockDown:=false
+	if(A_PriorHotkey="NumLock")
+		if (A_TimeSincePriorHotkey>200 or not p){
+			SetNumLockState % !GetKeyState("NumLock", "T")
+		}else if p{
+			Send {BS}
+	}
+	;~ ToolTip % p GetKeyState("NumLock","T")
+	return
+#If	;}
+
 #IfWinNotExist Active Window Info	;{
 ~#a::
 	if false{	;failed
