@@ -13,7 +13,7 @@ goto fragmentShortcut_End
 
 #If WinActive("ahk_class WeChatMainWndForPC ahk_exe WeChat.exe")
 ~RButton::	;{prepare to select delete
-	ToolTip %  A_Cursor 
+	;~ ToolTip %  A_Cursor 
 	;double right click:
 	;	A_PriorHotkey="~RButton" and A_TimeSincePriorHotkey<400
 	if(A_Cursor="Unknown"){
