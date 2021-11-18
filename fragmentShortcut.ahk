@@ -11,6 +11,27 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#If WinActive("ahk_class WeChatMainWndForPC ahk_exe WeChat.exe")
+~RButton::	;{prepare to select delete
+	ToolTip %  A_Cursor 
+	;double right click:
+	;	A_PriorHotkey="~RButton" and A_TimeSincePriorHotkey<400
+	if(A_Cursor="Unknown"){
+		orignMouseCoordMode:=A_CoordModeMouse
+		CoordMode, Mouse, Screen
+		MouseGetPos, orignX, orignY
+		;~ ToolTip % x
+		MouseMove, orignX>1329?-30:30, 219, 0, R
+		waitForRestore:=A_TickCount
+		CoordMode, Mouse, % orignMouseCoordMode
+		Send {End}
+	}
+	return	;}
+#If A_TickCount-waitForRestore<5000 and A_Cursor="Arrow"
+~Esc::
+	MouseMove, orignX>1329?+30:-30, -219, 0, R
+	return
+
 #If A_CaretX	;{..→:
 ~NumpadDot::
 	if(A_PriorHotkey="~NumpadDot" and A_TimeSincePriorHotkey<200)
