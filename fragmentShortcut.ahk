@@ -36,7 +36,9 @@ goto fragmentShortcut_End
 	;~ Send {F4}	;active address bar
 	;~ ToolTip % "A_CaretX: " A_CaretX
 	;	no A_CaretX in msedge.exe\address bar
-	SendEvent 192.168.43.1:9090/dump
+	SendEvent % "192" ;"{ASC " Asc(".") "}168{ASC " Asc(".") "}43{ASC " Asc(".") "}1{ASC " Asc(":") "}9090{ASC " Asc("/") "}dump"
+	;	try auto complete
+	Sleep 500
 	Send {Enter}
 	return
 #If
@@ -450,11 +452,19 @@ $Delete::Send {Enter}
 ;	"你确定要将此快捷方式移动到回收站吗?" / "你确定要永久删除此快捷方式吗?"
 $Delete::Send {Enter}	;}
 
+#IfWinActive 确认多个文件删除 ahk_class #32770 ahk_exe explorer.exe
+Del::
+	Send !y
+	return
 #IfWinActive	ahk_exe PotPlayerMini64.exe	;{
+#IfWinActive 删除项目 ahk_class OperationStatusWindow
+Del::
+	Send !d
+	return
 #IfWinActive 播放列表 ahk_exe PotPlayerMini64.exe
 Del::
 #IfWinActive ahk_class PotPlayer64 ahk_exe PotPlayerMini64.exe
-	Del::
+Del::
 	PotPlayer_Del:
 		Send +{Del}	;by default, del only apply to playlists
 		WinWaitActive,删除 ahk_class #32770, 确实要, 1
