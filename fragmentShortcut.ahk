@@ -11,6 +11,36 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#If
+~#v::return
+;~ a::ToolTip % A_PriorHotkey ", " A_TimeSincePriorHotkey	;debug
+#If A_PriorHotkey="~#v" and A_TimeSincePriorHotkey<2000
+;space:: ;select first
+1::	;select second
+2::
+3::
+4::
+	;~ ToolTip % A_TickCount	;debug
+	number:=A_ThisHotkey-1
+	Send {Down  %number%}{Enter}
+	return
+#If
+
+#IfWinActive ahk_exe msedge.exe
+~^t::
+	O_A_TitleMatchMode:=A_TitleMatchMode 
+	SetTitleMatchMode, 1
+	WinWaitActive, 新建标签页  ahk_exe msedge.exe
+	SetTitleMatchMode, % O_A_TitleMatchMode
+	;step not need (will active automatically)
+	;~ Send {F4}	;active address bar
+	;~ ToolTip % "A_CaretX: " A_CaretX
+	;	no A_CaretX in msedge.exe\address bar
+	SendEvent 192.168.43.1:9090/dump
+	Send {Enter}
+	return
+#If
+
 #If WinActive("ahk_class WeChatMainWndForPC ahk_exe WeChat.exe")
 ~RButton::	;{prepare to select delete
 	;~ ToolTip %  A_Cursor 
@@ -27,7 +57,7 @@ goto fragmentShortcut_End
 		Send {End}
 	}
 	return	;}
-#If A_TickCount-waitForRestore<5000 and A_Cursor="Arrow"
+#If A_TickCount-waitForRestore<5000 and A_Cursor="Arrow" and WinActive("ahk_class WeChatMainWndForPC ahk_exe WeChat.exe")
 ~Esc::
 	MouseMove, orignX>1329?+30:-30, -219, 0, R
 	return
