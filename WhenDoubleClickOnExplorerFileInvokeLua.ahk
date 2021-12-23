@@ -3,24 +3,53 @@ DoubleClickInterval:=200
 
 #Include SelectOrReadSelection.ahk
 
+IterfacePort:=80011
+connect:=false
 #Include lib\Socket.ahk
 client := new SocketTCP()
-try{
-	if(not connect){
-		connect:=true
-		ToolTip, my Socke`nConnecting..
-		client.Connect(["localhost", 8000])
-		;	or 127.0.0.0
+SocketSend(content:=""){
+	global connect
+	try{
+		if(content){
+			if(not connect){
+				;~ ToolTip, my Socke`nConnecting..
+				client.Connect(["localhost", IterfacePort])
+				;	or 127.0.0.0
+				;	may throw exception "Connect Failed"
+				;~ ToolTip, my Socke`nConnected
+				connect:=true
+			}
+			client.SendText(content "`n")
+			;	may throw exception "Send Failed"
+			;~ ToolTip, my Socke`nSent
+		}else{
+			client.Disconnect()
+			;	may throw exception "Disconnect Failed"
+			;~ ToolTip, my Socke`nDisconnect
+			connect:=false
+		}
+		return true	;success
+	}catch e{
+		connect:=false
+		;~ ToolTip, my Socket`nConnect/Send/Disconnect Failed.
+		return false
 	}
-	tickCount:=A_TickCount
-	ToolTip, my Socke`nSend %tickCount%
-	client.SendText(tickCount (Mod(tickCount,2)==1 ? "`n" : ","))
-}catch e{
-	Sleep, 1000
-	ToolTip, my Socket`nConnent/Send/Disconnect Failed`, try again
+}
+if(test=false){
+	SocketSend("test")
+	Sleep 2000
+	SocketSend()
 }
 OnExit:
-	client.Disconnect()
+	if(connect){
+		try{
+			client.Disconnect()
+		}catch e{
+			;~ ToolTip, my Socket`nDisconnect Failed.
+		}
+		connect:=false
+	}
+	return
 
 goto end20211223	;{
 	#If WinActive("ahk_exe explorer.exe") and GetKeyState("CapsLock","P") and (A_TickCount-LastTime)<DoubleClickInterval ;{
