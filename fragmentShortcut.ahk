@@ -103,7 +103,8 @@ NumLock up::
 	originalMode:=A_CoordModeMouse
 	CoordMode, Mouse, Screen
 	MouseGetPos,mouse_x,mouse_y
-	MouseMove, 1380, 742
+	;~ MouseMove, 1380, 742
+	MouseMove, A_ScreenWidth-50, A_ScreenHeight-80
 	if false{	;failed
 		KeyWait,Esc ,D L T3
 		if not ErrorLevel	;often timeout
