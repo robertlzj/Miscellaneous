@@ -11,6 +11,26 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#IfWinActive ahk_class fltk ahk_exe gui_e30.exe	;EasyBuilder 威纶通 触摸屏 HMI 模拟仿真
+~Esc::
+	if(A_PriorHotkey="~Esc" and A_TimeSincePriorHotkey<300)
+		WinClose, A
+	return
+
+#IfWinActive 指令:  ahk_exe HaiwellHappy.exe
+$Enter::
+	ControlSend 确定,{Enter},A
+	return
+Esc::
+#IfWinActive 批量元件注释 ahk_exe HaiwellHappy.exe
+Esc::
+#IfWinActive 元件状态表 - 状态表1 ahk_exe HaiwellHappy.exe
+Esc::
+#IfWinActive 强制 ahk_exe HaiwellHappy.exe
+Esc::
+	Send !{F4}
+	return
+
 #If
 ~#v::return
 ;~ a::ToolTip % A_PriorHotkey ", " A_TimeSincePriorHotkey	;debug
