@@ -30,26 +30,28 @@ SocketSend(content:=""){
 		}
 		return true	;success
 	}catch e{
-		connect:=false
 		;~ ToolTip, my Socket`nConnect/Send/Disconnect Failed.
 		return false
 	}
 }
-if(test=false){
+if(false){	;test
 	SocketSend("test")
 	Sleep 2000
 	SocketSend()
 }
+goto skip20211224	;{
 OnExit:
 	if(connect){
 		try{
 			client.Disconnect()
+			connect:=false
 		}catch e{
 			;~ ToolTip, my Socket`nDisconnect Failed.
 		}
-		connect:=false
 	}
 	return
+skip20211224:
+;}
 
 goto end20211223	;{
 	#If WinActive("ahk_exe explorer.exe") and GetKeyState("CapsLock","P") and (A_TickCount-LastTime)<DoubleClickInterval ;{
