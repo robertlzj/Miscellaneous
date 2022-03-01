@@ -1,6 +1,11 @@
 ﻿#SingleInstance,Force
 #NoEnv
 #Include TrayTip.ahk
+/*
+	todo: 如果文件a硬链接至文件夹_ReferStorage_下的文件b，则对a进行引用抽象提升时，可以直接取b。
+		如果可能，尽量将硬链接转换为软链接。
+		提升时便更新（同层的）硬链接。提升自己时可以检查当前源是否有硬链接的更深的源。
+*/
 if(ReferLink_StandAlone:=A_ScriptFullPath=A_LineFile){
 	#Include HotKey_WhenEditInSciTE.ahk
 	Menu, Tray, Icon, ReferLink.ico
