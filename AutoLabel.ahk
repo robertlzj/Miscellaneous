@@ -6,6 +6,11 @@ SendMode, Input
 	select nothing, click Alt+S to insert last label, press Alt + click S one more time to generate new free label
 	select label, click Alt+S to copy for last label, press Alt + click S one more time to change to new free label
 */
+/*
+	Problem: in Edge, #s/#q which from system is availble, which from autohotkey is disable.
+*/
+Menu, Tray, Icon, AutoLabel.ico
+Menu, Tray, Tip, #s to copy selected label`, or insert last label if exist`, or generate new one`, win+s to generate next free index new label
 
 LabelExists:={}
 return
@@ -16,6 +21,7 @@ GenerateNewLabel(){
 		lastLabel:=A_YYYY . A_MM . A_DD . "_" . A_Index
 	}until not LabelExists[lastLabel]	;new one
 	;~ ToolTip GenerateNewLabel: %lastLabel%
+	SetTimer, ResetLastLabel, -600000
 }
 InsertAndSelectLabel(){
 	global length,lastLabel,LabelExists,insertLabelAndKeepModifier
@@ -24,45 +30,65 @@ InsertAndSelectLabel(){
 	;	need wait?
 	length:=StrLen(lastLabel)
 	Send ^v
-	;~ Sleep 200
-	if insertLabelAndKeepModifier:=GetKeyState("Alt","P")
+	if insertLabelAndKeepModifier:=GetKeyState("LWin","P")
 		Send +{Left %length%}
 	LabelExists[lastLabel]:=true
+	Sleep 100
+	;	necessary. wait before restore clipboard
 }
 
 #If	;{
-~$Alt up::
+~$LWin up::
 	if insertLabelAndKeepModifier
-		Send {Right %length%}
+		Send +{Right %length%}
+		;	when select C:A, move caret (C) with one right arrow key,
+		;	will get different result in different application,
+		;	some move to C-1, some move to A
+		;	use shift + arrow key to move with one position step.
+	Sleep 500
 	insertLabelAndKeepModifier:=false
 	return
 #If	;}
 
-#If A_CaretX and not insertLabelAndKeepModifier	;{
-!s::	;{
+#If not insertLabelAndKeepModifier	;{
+;	remove "and A_CaretX", for there is no A_CaretX in some case (edit in web browser)
+#s::	;{
 	originalClipboard:=ClipboardAll
 	Clipboard:=""
 	Send ^c
 	ClipWait, 0.2
-	if ErrorLevel{	;expires
+	;~ ToolTip % "Clipboard " . Clipboard . ", ErrorLevel" . ErrorLevel
+	originalMatchMode:=A_TitleMatchMode
+	SetTitleMatchMode, 2
+	;	20220302_2. used for WinActive
+	if !ErrorLevel and Clipboard~="^\d{8}_\d+$"{
+		;	20220301
+		lastLabel:=Clipboard
+		insertLabelAndKeepModifier:=GetKeyState("LWin","P")
+	}else if ErrorLevel	;ClipWait expires - there is no selection
+		or WinActive("- ½Úµã±à¼­Æ÷ ahk_exe msedge.exe"){	;special handle for nspirit editer - no matter if selected or not
+		;	20220302_2
+		;~ ToolTip % "Clipboard: " . Clipboard . ", ErrorLevel: " . ErrorLevel
+			;~ . "`nlastLabel: " . lastLabel
 		if not lastLabel{	;generate one
 			GenerateNewLabel()
 		}
 		InsertAndSelectLabel()
-	}else if Clipboard~="^\d{8}_\d+$"{
-		;	20220301
-		lastLabel:=Clipboard
-		insertLabelAndKeepModifier:=GetKeyState("Alt","P")
 	}
+	SetTitleMatchMode % originalMatchMode
 	Clipboard:=originalClipboard
 	return	;}
 #If	;}
 
 #If insertLabelAndKeepModifier	;{
-!s::	;{
+#s::	;{
 	originalClipboard:=ClipboardAll
 	GenerateNewLabel()
 	InsertAndSelectLabel()
 	Clipboard:=originalClipboard
 	return	;}
 #If	;}
+
+ResetLastLabel:	;{
+	lastLabel:=""
+	return	;}
