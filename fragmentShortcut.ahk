@@ -1,4 +1,4 @@
-﻿	#NoEnv
+﻿#NoEnv
 #SingleInstance,Force
 #Include dataFromToClipboard.ahk
 #Include HotKey_WhenEditInSciTE.ahk
@@ -30,6 +30,18 @@ Esc::
 Esc::
 	Send !{F4}
 	return
+
+#IfWinActive ahk_exe msedge.exe	;{
+!`::	;{
+	originalTitleMatchMode:=A_TitleMatchMode
+	SetTitleMatchMode, 2
+	if WinActive("- 节点编辑器")
+		Send ^/
+	else
+		Send !`
+	SetTitleMatchMode, % originalTitleMatchMode
+	return	;}
+#If	;}
 
 #If
 ~#v::return
