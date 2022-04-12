@@ -55,9 +55,15 @@ InsertAndSelectLabel(){
 #s::	;{
 	originalClipboard:=ClipboardAll
 	Clipboard:=""
+	if HID_StandardStatusBar:=WinActive("ahk_exe zbstudio.exe"){
+		StatusBarGetText, statusBarText, 4, ahk_id %HID_StandardStatusBar%
+		if (not statusBarText~="Sel:")
+			goto AfterCopy
+	}
 	Send ^c
+AfterCopy:
 	ClipWait, 0.2
-	;~ ToolTip % "Clipboard " . Clipboard . ", ErrorLevel" . ErrorLevel
+	;~ ToolTip % "A_CaretX: " . A_CaretX . ", Clipboard: " . Clipboard . ", ErrorLevel: " . ErrorLevel
 	originalMatchMode:=A_TitleMatchMode
 	SetTitleMatchMode, 2
 	;	20220302_2. used for WinActive
