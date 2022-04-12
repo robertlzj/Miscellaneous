@@ -2,6 +2,20 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
+if false {
+	funcObj:=Func("invoke").bind("OK")
+	SetTimer, % funcObj, -1
+	return
+
+	invoke(message){
+		MsgBox % message
+	}
+}
+
+^t::
+	ToolTip % A_CaretX
+	return
+
 a:={}
 b:="b"
 MsgBox % a[b]++
