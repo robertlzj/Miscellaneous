@@ -17,6 +17,88 @@ goto fragmentShortcut_End
 		WinClose, A
 	return
 
+#If IsActiveWindow("\- 节点编辑器") && A_TimeSincePriorHotkey<1500
+Tab::
+#If IsActiveWindow("\- 节点编辑器")	;{
+:C:tt::
+	;C: Case sensitive
+	;?: The hotstring will be triggered even when it is inside another word
+	candidateList:=["type(){Left}","type'Text'{Left}+{Left 4}","type'TextView'{Left}+{Left 8}","type'Button'{Left}+{Left 6}"]
+	candidateList[-1]:=6
+	candidateList[-2]:=10-1
+	candidateList[-3]:=StrLen("type'TextView'")-1
+	candidateList[-4]:=12-1
+	isBegin:=A_TimeSincePriorHotkey>2500 || A_TimeSincePriorHotkey=-1
+	;~ ToolTip % A_TimeSincePriorHotkey ", " index
+	if not isBegin
+		Send % "{Right}{BS " . candidateList[-index] . "}"
+	index:=isBegin?1:(mod(index,candidateList.Length())+1)
+	Send % candidateList[index]
+	return
+#If	;}
+
+/*更新
+	#If WinActive("ahk_exe msedge.exe") and not waiting_doubel_click 	;{
+	~F1::	;{
+		;始终会被游览器拦截..
+		WinGetTitle, winTitle, A
+		;~ ToolTip down
+		if(winTitle~="\- 节点编辑器"){
+			Send FA^a	;Fold All
+			KeyWait, F1	;wait release
+			;~ ToolTip KeyUp
+			waiting_doubel_click:=true
+			KeyWait, F1, DT1
+			if not ErrorLevel	;not timeout
+				;~ ToolTip double
+				Send FA{Enter}
+				;	不可仅仅`Send {Enter}`，始终会被游览器拦截
+			;~ else
+				;~ ToolTip single
+			waiting_doubel_click:=false
+		}
+		return	;}
+	#If	;}
+*/
+IsActiveWindow(title){
+	if WinActive("ahk_exe msedge.exe"){
+		WinGetTitle, winTitle, A
+		return winTitle~=title
+	}
+}
+#If IsActiveWindow("\- 节点编辑器")	;{
+~$F1::	;{
+	Send FA^a
+	if(A_PriorHotkey=A_ThisHotkey and A_TimeSincePriorHotkey<800){
+		Send {Enter}
+	}
+	return	;}
+F2::	;{
+	if(A_PriorHotkey!=A_ThisHotkey or A_TimeSincePriorHotkey>1500){
+		Send {F1}Du{Enter}
+		Sleep, 500
+		Send {Left}={{},{}},--{Left 5}	;Duplicate Selection
+	}else if(A_PriorHotkey==A_ThisHotkey or A_TimeSincePriorHotkey<1000){
+		Send {Del}{Enter}
+	}
+	return ;}
+#If	;}
+#If IsActiveWindow("节点精灵-节点查询工具")	;{
+~LButton::	;{
+	ToolTip
+	MouseGetPos, mouse_down_x, mouse_down_y
+	return	;}
+~LButton up::	;{
+	MouseGetPos, mouse_up_x, mouse_up_y
+	if(A_PriorHotkey="~LButton" ;and A_TimeSincePriorHotkey>50
+		&& (abs(mouse_up_x-mouse_down_x)>10 or abs(mouse_up_y-mouse_down_y)>10)){	;Select
+		;~ ToolTip % abs(mouse_up_x-mouse_down_x) ", " abs(mouse_up_y-mouse_down_y)
+		Send ^c
+		ToolTip("Copy")
+	}
+	return	;}
+#If	;}
+
 #IfWinActive 指令:  ahk_exe HaiwellHappy.exe
 $Enter::
 	ControlSend 确定,{Enter},A
@@ -30,6 +112,23 @@ Esc::
 Esc::
 	Send !{F4}
 	return
+
+#IfWinActive ahk_exe TortoiseGitMerge.exe	;{
+f1::
+	Send ^o
+~^o::
+	WinWaitActive, TortoiseGitMerge, &Merging, 3
+	if ErrorLevel{ ;timeout
+		FileAppend, timeout, *
+		return
+	}
+	FileAppend, find, *
+	ControlSetText, Edit1, G:\My Documents\Lua\Lua\temp.lua
+	ControlSetText, Edit2, G:\My Documents\Lua\Lua\
+	ControlFocus, Edit2
+	ControlSend, Edit2, {End}
+	return
+#If	;}
 
 #IfWinActive ahk_exe msedge.exe	;{
 !`::	;{
@@ -651,6 +750,17 @@ $d::
 		Click
 	return
 #If
+
+ToolTip(text){
+StopToolTip:
+	ToolTip
+	if text{
+		ToolTip % text
+		;~ ToolTip:=Func("ToolTip")
+		SetTimer, StopToolTip, -1000
+	}
+	return
+}
 
 fragmentShortcut_End:
 _:=_
