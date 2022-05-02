@@ -4,7 +4,7 @@
 #Include HotKey_WhenEditInSciTE.ahk
 ;~ #Include DelFileWithLink.ahk
 ;	DelFileWithLink_ExternalTrigger
-DelFileWithLink_ExternalTrigger:	;禁用了以上#include，需要手动构造个标签，以免下面报错
+#Include ClipboardCopyPaste.ahk
 
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
@@ -17,6 +17,16 @@ goto fragmentShortcut_End
 	if(A_PriorHotkey="~Esc" and A_TimeSincePriorHotkey<300)
 		WinClose, A
 	return
+	
+#IfWinActive ahk_exe Typora.exe	;{
+~^k::	;{Hyperlink
+	SendInput {Right 3}{#}	;[..](#|)
+	return	;}
+^+k::	;{insert
+	selection:=Clipboard()
+	SendInput <a name="%selection%"></a>{Left 4}
+	return	;}
+#If	;}
 
 #If IsActiveWindow("\- 节点编辑器") && A_TimeSincePriorHotkey<1500
 Tab::
@@ -115,9 +125,6 @@ Esc::
 	return
 
 #IfWinActive ahk_exe TortoiseGitMerge.exe	;{
-f2::
-	MsgBox % A_ComputerName ", " A_UserName
-	return
 f1::
 	Send ^o
 ~^o::
