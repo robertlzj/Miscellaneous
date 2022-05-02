@@ -2,8 +2,9 @@
 #SingleInstance,Force
 #Include dataFromToClipboard.ahk
 #Include HotKey_WhenEditInSciTE.ahk
-#Include DelFileWithLink.ahk
+;~ #Include DelFileWithLink.ahk
 ;	DelFileWithLink_ExternalTrigger
+DelFileWithLink_ExternalTrigger:	;禁用了以上#include，需要手动构造个标签，以免下面报错
 
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
@@ -78,7 +79,7 @@ F2::	;{
 		Send {F1}Du{Enter}
 		Sleep, 500
 		Send {Left}={{},{}},--{Left 5}	;Duplicate Selection
-	}else if(A_PriorHotkey==A_ThisHotkey or A_TimeSincePriorHotkey<1000){
+	}else if(A_PriorHotkey==A_ThisHotkey or A_TimeSincePriorHotkey<2000){
 		Send {Del}{Enter}
 	}
 	return ;}
@@ -114,6 +115,9 @@ Esc::
 	return
 
 #IfWinActive ahk_exe TortoiseGitMerge.exe	;{
+f2::
+	MsgBox % A_ComputerName ", " A_UserName
+	return
 f1::
 	Send ^o
 ~^o::
@@ -123,8 +127,8 @@ f1::
 		return
 	}
 	FileAppend, find, *
-	ControlSetText, Edit1, G:\My Documents\Lua\Lua\temp.lua
-	ControlSetText, Edit2, G:\My Documents\Lua\Lua\
+	ControlSetText, Edit1, % A_ComputerName="ROBERTPAD"?"C:\Users\rober\Documents\Lua\temp.lua":"G:\My Documents\Lua\Lua\temp.lua"
+	ControlSetText, Edit2, % A_ComputerName="ROBERTPAD"?"C:\Users\rober\Documents\Lua\temp2.lua":"G:\My Documents\Lua\Lua\"
 	ControlFocus, Edit2
 	ControlSend, Edit2, {End}
 	return
