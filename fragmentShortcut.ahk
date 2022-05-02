@@ -5,6 +5,7 @@
 ;~ #Include DelFileWithLink.ahk
 ;	DelFileWithLink_ExternalTrigger
 #Include ClipboardCopyPaste.ahk
+DelFileWithLink_ExternalTrigger:
 
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
@@ -19,8 +20,9 @@ goto fragmentShortcut_End
 	return
 	
 #IfWinActive ahk_exe Typora.exe	;{
-~^k::	;{Hyperlink
-	SendInput {Right 3}{#}	;[..](#|)
+~^k Up::	;{Hyperlink
+	Send ^!c	;Copy as Plain Text
+	Send {Right 3}{#}	;[..](#|)
 	return	;}
 ^+k::	;{insert
 	selection:=Clipboard()
@@ -45,6 +47,9 @@ Tab::
 		Send % "{Right}{BS " . candidateList[-index] . "}"
 	index:=isBegin?1:(mod(index,candidateList.Length())+1)
 	Send % candidateList[index]
+	return
+::fu::
+	Send function(stack,event,super_event){Enter 2}end`,^[{Up}
 	return
 #If	;}
 
