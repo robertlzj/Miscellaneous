@@ -21,8 +21,15 @@ goto fragmentShortcut_End
 	
 #IfWinActive ahk_exe Typora.exe	;{
 ~^k Up::	;{Hyperlink
-	Send ^!c	;Copy as Plain Text
-	Send {Right 3}{#}	;[..](#|)
+	orig_clipboard:=ClipboardAll
+	Clipboard:=""
+	;~ Send {Blind}+c	;Copy as Plain Text
+	Send ^+c	;Copy as Plain Text
+	ClipWait, 0.5
+	;~ ToolTip % ErrorLevel
+	Send {Right 3}{#}^v	;[..](#|)
+	Sleep, 200
+	Clipboard:=orig_clipboard
 	return	;}
 ^+k::	;{insert
 	selection:=Clipboard()
