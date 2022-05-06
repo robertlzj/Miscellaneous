@@ -89,6 +89,15 @@ IsActiveWindow(title){
 		return winTitle~=title
 	}
 }
+IsSelect(){
+	;节点精灵里总是有选择，默认为当前行
+	local orig_clipboard:=ClipboardAll
+	Clipboard:=""
+	Send ^c
+	ClipWait,0.5
+	Clipboard:=orig_clipboard
+	return !ErrorLevel
+}
 #If IsActiveWindow("\- 节点编辑器")	;{
 ~$F1::	;{
 	Send FA^a
@@ -101,10 +110,16 @@ F2::	;{
 		Send {F1}Du{Enter}
 		Sleep, 500
 		Send {Left}={{},{}},--{Left 5}	;Duplicate Selection
-	}else if(A_PriorHotkey==A_ThisHotkey or A_TimeSincePriorHotkey<2000){
+	}else if(A_PriorHotkey==A_ThisHotkey or A_TimeSincePriorHotkey<2500){
 		Send {Del}{Enter}
 	}
 	return ;}
+~^LButton::	;{
+	if(A_PriorHotkey=A_ThisHotkey && A_TimeSincePriorHotkey<1000){
+		ToolTip("Copy")
+		Send ^c
+	}
+	return	;}
 #If	;}
 #If IsActiveWindow("节点精灵-节点查询工具")	;{
 ~LButton::	;{
