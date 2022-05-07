@@ -48,7 +48,9 @@ Tab::
 	candidateList[-2]:=10-1
 	candidateList[-3]:=StrLen("type'TextView'")-1
 	candidateList[-4]:=12-1
-	isBegin:=A_TimeSincePriorHotkey>2500 || A_TimeSincePriorHotkey=-1
+	isBegin:=(A_TickCount-lastTrigerTickCount)>2000
+	;	-'A_TimeSincePriorHotkey>2500 || A_TimeSincePriorHotkey=-1'
+	lastTrigerTickCount:=A_TickCount
 	;~ ToolTip % A_TimeSincePriorHotkey ", " index
 	if not isBegin
 		Send % "{Right}{BS " . candidateList[-index] . "}"
