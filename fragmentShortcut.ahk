@@ -19,6 +19,40 @@ goto fragmentShortcut_End
 		WinClose, A
 	return
 	
+#If  WinActive("ahk_exe zbstudio.exe") && ClassUnderMouse()~="wxWindowNR\d+"	;{
+	;	wxWindowNRx: 每个标签是一个控件
+/* 
+	user.lua
+		keymap[ID.RENAMEALLINSTANCES] = "Alt-R"
+		keymap[ID.REPLACEALLSELECTIONS] = "Alt-Shift-R"
+*/
+~!R::	;{
+	;~ ToolTip 1
+	Send {Blind}{Shift down}
+	SetTimer, Disable_ShiftDown, -800
+	return	;}
+~!+R::	;{
+	;~ ToolTip 2
+	SetTimer, Disable_ShiftDown, off
+Disable_ShiftDown:	;{
+	;~ ToolTip 3
+	Send {Blind}{Shift up}
+	return	;}
+/* old method
+	~!RButton::	;{
+		Hotkey, If, WinActive("ahk_exe zbstudio.exe") && ClassUnderMouse()=="wxWindowNR8"
+		Hotkey, R, SelectAllInstancesThenReplace
+		SetTimer, Disable_SelectAllInstancesThenReplace, -800
+		return	;}
+	SelectAllInstancesThenReplace:
+		Sleep 200
+		Send {Up 6}{Enter}
+	Disable_SelectAllInstancesThenReplace:
+		Hotkey, R, SelectAllInstancesThenReplace, Off
+		return
+ */
+#If	;}
+	
 #IfWinActive ahk_exe Typora.exe	;{
 ~^k Up::	;{Hyperlink
 	orig_clipboard:=ClipboardAll
@@ -737,6 +771,7 @@ Del::
 	}
 	return	;}
 ;}
+;Control Under Mouse Position:
 ClassUnderMouse(){
 	MouseGetPos , OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
 	return OutputVarControl
