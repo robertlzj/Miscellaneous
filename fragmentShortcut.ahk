@@ -19,6 +19,15 @@ goto fragmentShortcut_End
 		WinClose, A
 	return
 	
+#If  WinActive("ahk_exe zbstudio.exe") ;{
+*~F3::	;{
+	ControlGetText, value, Static1, A
+	if(value=="Reached end of text and wrapped around."){
+		ToolTip("Reached end of text")
+	}
+	return	;}
+#If 	;}
+
 #If  WinActive("ahk_exe zbstudio.exe") && ClassUnderMouse()~="wxWindowNR\d+"	;{
 	;	wxWindowNRx: 每个标签是一个控件
 /* 
