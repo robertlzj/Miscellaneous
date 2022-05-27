@@ -13,6 +13,23 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#IfWinActive ahk_class #32770 ahk_exe lua53.exe,地址:	;{
+~Esc::	;{
+	if(A_PriorHotkey==A_ThisHotkey && A_TimeSincePriorHotkey<400)
+		Send !{F4}
+	else
+		ToolTip("double click to close")
+	return	;}
+#If	;}
+
+#IfWinActive 查找 ahk_class #32770 ahk_exe hh.exe	;{
+F3::!n
++F3::!p
+#If	;}
+#IfWinActive IUP - Portable User Interface ahk_class HH Parent ahk_exe hh.exe	;{
+F3::^f
+#If	;}
+
 #IfWinActive ahk_class fltk ahk_exe gui_e30.exe	;EasyBuilder 威纶通 触摸屏 HMI 模拟仿真
 ~Esc::
 	if(A_PriorHotkey="~Esc" and A_TimeSincePriorHotkey<300)
