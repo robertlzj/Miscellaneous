@@ -852,16 +852,7 @@ $d::
 	return
 #If
 
-ToolTip(text){
-StopToolTip:
-	ToolTip
-	if text{
-		ToolTip % text
-		;~ ToolTip:=Func("ToolTip")
-		SetTimer, StopToolTip, -1000
-	}
-	return
-}
+#Include ToolTip.ahk
 
 fragmentShortcut_End:
 _:=_
