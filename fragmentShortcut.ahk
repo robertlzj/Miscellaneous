@@ -11,6 +11,16 @@ Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
 
+;{新建文本文档 txt 热键
+	Loop, Reg, HKEY_CLASSES_ROOT\Local Settings\MuiCache, R
+	{
+		subItem:=A_LoopRegSubKey
+		;	Local Settings\MuiCache\143\AAF68885
+		break
+	}
+	RegWrite, REG_SZ, % "HKEY_CLASSES_ROOT\" . subItem , @C:\WINDOWS\system32\notepad.exe`,-469, 文本文档(&T)
+;}
+
 goto fragmentShortcut_End
 
 #IfWinActive ahk_class #32770 ahk_exe lua53.exe,地址:	;{
