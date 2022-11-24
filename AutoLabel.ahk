@@ -21,7 +21,9 @@ GenerateNewLabel(){
 		lastLabel:=A_YYYY . A_MM . A_DD . "_" . A_Index
 	}until not LabelExists[lastLabel]	;new one
 	;~ ToolTip GenerateNewLabel: %lastLabel%
-	SetTimer, ResetLastLabel, -600000
+	
+	;~ SetTimer, ResetLastLabel, -600000
+	;	disable auto reset. 20221124
 }
 InsertAndSelectLabel(){
 	global length,lastLabel,LabelExists,insertLabelAndKeepModifier

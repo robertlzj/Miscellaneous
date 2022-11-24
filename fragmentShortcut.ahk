@@ -23,6 +23,53 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#IfWinActive 查找和替换 ahk_exe acadlt.exe
+F1::
+	Send !r
+	ControlGetText,Output,Edit2
+	if(method="冷盐罐 侧壁"){
+		if(Output<=18)
+			Output+=18
+		else if(19<=Output and Output<=36)
+			Output+=18
+		else
+			Output:=Mod(Output,18)+1
+	}
+	Output+=1
+	Output:=Format("{:03}", Output)
+	Sleep 200
+	ControlSetText,Edit2,% Output
+	return 
+#If
+
+#IfWinActive 播放列表 ahk_exe PotPlayerMini64.exe	;{
+~F2::
+	WinWaitActive, 重命名文件 ahk_exe PotPlayerMini64.exe,, 3
+	if ErrorLevel
+		return
+	Send {End}^{Left}{Left}·	;|ab.cd>ab·|.cd
+	WinWaitNotActive,,,30
+	if ErrorLevel
+		return
+	Send {F6 2}{Down}{Enter}	;重新激活播放列表窗口
+	return
+#If
+
+#If WinActive("ahk_class CabinetWClass ahk_exe explorer.exe")	;{
+~RButton up::
+~AppsKey::
+	;~ ToolTip % A_ThisHotkey
+	return
+#If WinActive("ahk_class CabinetWClass ahk_exe explorer.exe") && ((A_PriorHotkey=="~RButton up" || A_PriorHotkey=="~AppsKey") && A_TimeSincePriorHotkey<800)
+~w::	
+	;~ ToolTip % A_ThisHotkey
+	return
+#If WinActive("ahk_class CabinetWClass ahk_exe explorer.exe") && (A_PriorHotkey=="~w" && A_TimeSincePriorHotkey<500)
+~w::
+	Send {Enter}
+	return
+#If	;}
+
 #IfWinActive ahk_class #32770 ahk_exe lua53.exe,地址:	;{
 ~Esc::	;{
 	if(A_PriorHotkey==A_ThisHotkey && A_TimeSincePriorHotkey<400)
@@ -89,7 +136,7 @@ Disable_ShiftDown:	;{
  */
 #If	;}
 	
-#IfWinActive ahk_exe Typora.exe	;{
+#IfWinActive ahk_exe Typora.exe	;markdown	;{
 ~^k Up::	;{Hyperlink
 	orig_clipboard:=ClipboardAll
 	Clipboard:=""
@@ -101,7 +148,7 @@ Disable_ShiftDown:	;{
 	Sleep, 200
 	Clipboard:=orig_clipboard
 	return	;}
-^+k::	;{insert
+^+k::	;{create anchor insert 
 	selection:=Clipboard()
 	SendInput <a name="%selection%"></a>{Left 4}
 	return	;}
