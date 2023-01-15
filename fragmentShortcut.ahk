@@ -11,6 +11,72 @@ Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
 
+;{Everything
+;	Context Menu - shortcut for PowerRename
+;	F2 to rename
+#IfWinActive, ahk_class EVERYTHING ahk_exe Everything.exe
+~RButton::return
+~AppsKey::return
+~$w::	;"w" is shortcut for "PowerRename(W)"
+	if((A_PriorHotkey="~RButton" || A_PriorHotkey="~AppsKey") && A_TimeSincePriorHotkey<800){
+		Sleep 200
+		Send w{Enter}
+		WinWaitActive, ahk_exe PowerToys.PowerRename.exe,,1
+		if ErrorLevel	;PowerRename not active
+			return
+		;active input edit box
+		Send {Tab 3} {BS}
+	}
+	return
+~F2::
+	Send {Right}
+	return
+#If
+;}
+
+;{PowerRename
+;	navigate between source and target
+;	close window
+;	apply
+
+;navigate between source and target
+#IfWinActive,ahk_exe PowerToys.PowerRename.exe
+$~Tab::
+$~+Tab::
+	keys:=(GetKeyState("Shift","P")?"+":"") . "{" . SubStr(A_ThisHotkey,-2) . "}"
+	;~ ToolTip, % keys	;debug
+	Loop,4{
+		Send % keys
+	}
+	return
+;close window
+$~Esc::
+	if(A_PriorHotkey=A_ThisHotkey && A_TimeSincePriorHotkey<800)
+		Send !{F4}
+	return
+$Enter::
+	if not (A_PriorHotkey=A_ThisHotkey && A_TimeSincePriorHotkey<800){
+		ToolTip("Double click Enter to apply")
+		return
+	}
+	ToolTip("")
+;~ $F4::	;debug
+	WinGetPos , X, Y, Width, Height, A
+	ImageSearch, OutputVarX, OutputVarY, 0, 0, Width, Height, *5 PowerRename_应用_按钮.bmp
+	;	background is transparent
+	;	Coordinates are relative to the active window
+	if(not ErrorLevel){	;1 not found, 2 error
+		;~ MouseMove, % OutputVarX+5, % OutputVarY+5
+		MouseMove, % OutputVarX+95, % OutputVarY+15
+		;	Coordinates are relative to the active window
+		OutputDebug, Found
+		Click
+	}else
+		OutputDebug, Not found (%ErrorLevel%)
+	return
+#If
+;}PowerRename
+
 ;{新建文本文档 txt 热键
 	Loop, Reg, HKEY_CLASSES_ROOT\Local Settings\MuiCache, R
 	{
