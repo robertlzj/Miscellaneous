@@ -2,6 +2,7 @@
 #NoEnv
 #Include HotKey_WhenEditInSciTE.ahk
 Menu, Tray, Icon, SG.ico
+Menu, Tray, Tip, ^`: enable/disable`n^1..: Create Group; +^1..: Add Group; 1..: Restore Group
 TrayTip, %A_ScriptName%, Launch,,16
 #Include SelectOrReadSelection.ahk
 Hotkey, If, Condition()
