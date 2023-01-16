@@ -11,14 +11,30 @@ Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
 
+#IfWinActive, ahk_class ApplicationFrameWindow ahk_exe ApplicationFrameHost.exe	;?
+~Esc::
+	if(A_PriorHotkey=A_ThisHotkey && A_TimeSincePriorHotkey<800)
+		Send !{F4}
+	return
+#If
+
+#IfWinActive, 确认 ahk_class TMessageForm ahk_exe WinSCP.exe
+~Delete::
+	Send {Space}	;确认
+	return
+#If
+
+#IfWinActive, ahk_class CabinetWClass ahk_exe explorer.exe
+~RButton up::return
+~AppsKey::return
+~$w::
+	;~ ToolTip % A_PriorHotkey
 ;{Everything
 ;	Context Menu - shortcut for PowerRename
 ;	F2 to rename
 #IfWinActive, ahk_class EVERYTHING ahk_exe Everything.exe
-~RButton::return
-~AppsKey::return
 ~$w::	;"w" is shortcut for "PowerRename(W)"
-	if((A_PriorHotkey="~RButton" || A_PriorHotkey="~AppsKey") && A_TimeSincePriorHotkey<800){
+	if((A_PriorHotkey="~RButton" || A_PriorHotkey="~RButton up" || A_PriorHotkey="~AppsKey") && A_TimeSincePriorHotkey<800){
 		Sleep 200
 		Send w{Enter}
 		WinWaitActive, ahk_exe PowerToys.PowerRename.exe,,1
@@ -31,6 +47,8 @@ SetTitleMatchMode, 2
 ~F2::
 	Send {Right}
 	return
+~RButton::return
+~AppsKey::return
 #If
 ;}
 
