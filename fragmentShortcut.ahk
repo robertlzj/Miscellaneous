@@ -38,10 +38,18 @@ goto fragmentShortcut_End
 	return
 #If
 
-#IfWinActive, ahk_class CabinetWClass ahk_exe explorer.exe
+#Include phone.ahk
+;	使用其中的`GetSelectPath`
+;	自"Get paths of selected items in an explorer window.ahk"
+;	用于区分右击操作是否选中文件，或，在文件夹空白区域
+#IfWinActive ahk_class CabinetWClass ahk_exe explorer.exe
 ~RButton up::return
 ~AppsKey::return
+#If WinActive("ahk_class CabinetWClass ahk_exe explorer.exe")
 ~$w::
+	if not GetSelectPath().Length()	;在文件夹空白区域
+		return
+	;	else	;选中文件
 	;~ ToolTip % A_PriorHotkey
 ;{Everything
 ;	Context Menu - shortcut for PowerRename
