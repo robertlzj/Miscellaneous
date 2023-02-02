@@ -1,5 +1,6 @@
 ﻿#NoEnv
 #SingleInstance,Force
+;================auto-execute section begin================
 #Include dataFromToClipboard.ahk
 #Include HotKey_WhenEditInSciTE.ahk
 ;~ #Include DelFileWithLink.ahk
@@ -10,6 +11,19 @@ DelFileWithLink_ExternalTrigger:
 Menu, Tray, Icon, fragmentShortcut-FS.ico
 SetTitleMatchMode, 2
 ;	2: anywhere
+
+;{新建文本文档 txt 热键
+	Loop, Reg, HKEY_CLASSES_ROOT\Local Settings\MuiCache, R
+	{
+		subItem:=A_LoopRegSubKey
+		;	Local Settings\MuiCache\143\AAF68885
+		break
+	}
+	RegWrite, REG_SZ, % "HKEY_CLASSES_ROOT\" . subItem , @C:\WINDOWS\system32\notepad.exe`,-469, 文本文档(&T)
+;}
+
+goto fragmentShortcut_End
+;================auto-execute section end================
 
 #IfWinActive, ahk_class ApplicationFrameWindow ahk_exe ApplicationFrameHost.exe	;?
 ~Esc::
@@ -94,18 +108,6 @@ $Enter::
 	return
 #If
 ;}PowerRename
-
-;{新建文本文档 txt 热键
-	Loop, Reg, HKEY_CLASSES_ROOT\Local Settings\MuiCache, R
-	{
-		subItem:=A_LoopRegSubKey
-		;	Local Settings\MuiCache\143\AAF68885
-		break
-	}
-	RegWrite, REG_SZ, % "HKEY_CLASSES_ROOT\" . subItem , @C:\WINDOWS\system32\notepad.exe`,-469, 文本文档(&T)
-;}
-
-goto fragmentShortcut_End
 
 #IfWinActive 查找和替换 ahk_exe acadlt.exe
 F1::
