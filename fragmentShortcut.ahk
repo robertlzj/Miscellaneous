@@ -23,6 +23,32 @@ SetTitleMatchMode, 2
 
 goto fragmentShortcut_End
 
+#IfWinActive Paster - Snipaste ahk_class Qt5QWindowToolSaveBits ahk_exe Snipaste.exe	;{
+;	Snipaste Pin to screen
+;~ ~RButton::	;{
+	;~ MouseGetPos,Snipaste_Mouse_X,Snipaste_Mouse_Y,Snipaste_Win
+;~ return ;}
+~RButton up::
+~AppsKey up::
+;{
+	;打开标注工具栏
+	;~ ToolTip("auto switch Toolbox")
+	MouseGetPos,Snipaste_Mouse_X,Snipaste_Mouse_Y	;,Snipaste_Win
+	;	20230212_1. Snipaste_Win会随是否弹出右键菜单而不同
+	Send {Down 3}
+	;	当未缩放时有效。
+	;	缩放后菜单顺序改变。
+	Sleep 400
+	_1:=Snipaste_Mouse_X,_2:=Snipaste_Mouse_Y	;,_3:=Snipaste_Win
+	;	20230212_1
+	MouseGetPos,Snipaste_Mouse_X,Snipaste_Mouse_Y,Snipaste_Win
+	if(Abs(_1-Snipaste_Mouse_X)<10 && Abs(_2-Snipaste_Mouse_Y)<10 && WinActive("Paster - Snipaste ahk_class Qt5QWindowToolSaveBits ahk_exe Snipaste.exe"))
+		Send {Enter}
+	;~ else
+		;~ ToolTip % _1 "-" Snipaste_Mouse_X "," _2 "-" Snipaste_Mouse_Y ","  _3 "-" Snipaste_Win
+	return	;}
+#If	;}
+
 #IfWinActive 查找和替换 ahk_exe acadlt.exe
 F1::
 	Send !r
