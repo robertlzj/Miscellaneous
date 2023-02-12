@@ -61,6 +61,19 @@ F2::
 		}
 	}
 	return
+;{功能：命名文件（文件夹）为文件路径时，自动替换`\`为`_`。
+;	"a\b">"a_b", "c\d_e">"c__d_e".
+$^v::
+	underscores:="_"
+	origin_clipboard:=ClipboardAll
+	while(InStr(Clipboard,underscores))
+		underscores.="_"
+	;~ Clipboard:=RegExReplace(Clipboard,"(\\)",underscores)
+	Clipboard:=StrReplace(Clipboard,"\",underscores)
+	Send ^v
+	Clipboard:=origin_clipboard
+	return
+;}
 #If WinActive("ahk_exe explorer.exe")
 ~F2::
 Abort:

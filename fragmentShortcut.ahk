@@ -1,5 +1,6 @@
 ﻿#NoEnv
 #SingleInstance,Force
+;================auto-execute section begin================
 #Include dataFromToClipboard.ahk
 #Include HotKey_WhenEditInSciTE.ahk
 ;~ #Include DelFileWithLink.ahk
@@ -22,6 +23,99 @@ SetTitleMatchMode, 2
 ;}
 
 goto fragmentShortcut_End
+;================auto-execute section end================
+
+#IfWinActive, ahk_class ApplicationFrameWindow ahk_exe ApplicationFrameHost.exe	;?
+~Esc::
+	if(A_PriorHotkey=A_ThisHotkey && A_TimeSincePriorHotkey<800)
+		Send !{F4}
+	return
+#If
+
+#IfWinActive, 确认 ahk_class TMessageForm ahk_exe WinSCP.exe
+~Delete::
+	Send {Space}	;确认
+	return
+#If
+
+#Include phone.ahk
+;	使用其中的`GetSelectPath`
+;	自"Get paths of selected items in an explorer window.ahk"
+;	用于区分右击操作是否选中文件，或，在文件夹空白区域
+#IfWinActive ahk_class CabinetWClass ahk_exe explorer.exe
+~RButton up::return
+~AppsKey::return
+#If WinActive("ahk_class CabinetWClass ahk_exe explorer.exe")
+~$w::
+	if not GetSelectPath().Length()	;在文件夹空白区域
+		return
+	;	else	;选中文件
+	;~ ToolTip % A_PriorHotkey
+;{Everything
+;	Context Menu - shortcut for PowerRename
+;	F2 to rename
+#IfWinActive, ahk_class EVERYTHING ahk_exe Everything.exe
+~$w::	;"w" is shortcut for "PowerRename(W)"
+	if((A_PriorHotkey="~RButton" || A_PriorHotkey="~RButton up" || A_PriorHotkey="~AppsKey") && A_TimeSincePriorHotkey<800){
+		Sleep 200
+		Send w{Enter}
+		WinWaitActive, ahk_exe PowerToys.PowerRename.exe,,1
+		if ErrorLevel	;PowerRename not active
+			return
+		;active input edit box
+		Send {Tab 3} {BS}
+	}
+	return
+~F2::
+	Send {Right}
+	return
+~RButton::return
+~AppsKey::return
+#If
+;}
+
+;{PowerRename
+;	navigate between source and target
+;	close window
+;	apply
+
+;navigate between source and target
+#IfWinActive,ahk_exe PowerToys.PowerRename.exe
+$~Tab::
+$~+Tab::
+	keys:=(GetKeyState("Shift","P")?"+":"") . "{" . SubStr(A_ThisHotkey,-2) . "}"
+	;~ ToolTip, % keys	;debug
+	Loop,4{
+		Send % keys
+	}
+	return
+;close window
+$~Esc::
+	if(A_PriorHotkey=A_ThisHotkey && A_TimeSincePriorHotkey<800)
+		Send !{F4}
+	return
+$Enter::
+	if not (A_PriorHotkey=A_ThisHotkey && A_TimeSincePriorHotkey<800){
+		ToolTip("Double click Enter to apply")
+		return
+	}
+	ToolTip("")
+;~ $F4::	;debug
+	WinGetPos , X, Y, Width, Height, A
+	ImageSearch, OutputVarX, OutputVarY, 0, 0, Width, Height, *5 PowerRename_应用_按钮.bmp
+	;	background is transparent
+	;	Coordinates are relative to the active window
+	if(not ErrorLevel){	;1 not found, 2 error
+		;~ MouseMove, % OutputVarX+5, % OutputVarY+5
+		MouseMove, % OutputVarX+95, % OutputVarY+15
+		;	Coordinates are relative to the active window
+		OutputDebug, Found
+		Click
+	}else
+		OutputDebug, Not found (%ErrorLevel%)
+	return
+#If
+;}PowerRename
 
 #IfWinActive Paster - Snipaste ahk_class Qt5QWindowToolSaveBits ahk_exe Snipaste.exe	;{
 ;	Snipaste Pin to screen
