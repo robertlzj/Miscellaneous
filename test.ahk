@@ -2,6 +2,47 @@
 #SingleInstance,Force
 #Include HotKey_WhenEditInSciTE.ahk
 
+hModule := DllCall("LoadLibrary", "Str", "C:\ProgramFiles\ZeroBraneStudio-master\bin\clibs53\alien.dll", "Ptr")
+if ErrorLevel
+	MsgBox error: %ErrorLevel%
+DllCall("FreeLibrary", "Ptr", hModule)
+if ErrorLevel
+	MsgBox error: %ErrorLevel%
+
+/*	迷..
+	;SortN 分段排序 V1.9，保留重复项，去除末尾换行符
+	;http://ahk8.com/thread-5415-post-32190.html
+	;RobertL@AHK8
+	;参数：
+	;    s:传入待排序字符串
+	;    d:分隔符（默认"`r`n"）
+	RobertL_SortN(s,d:="`r`n"){
+		If IsObject(s){
+			a:=[],r:=""
+			Loop % ObjMaxIndex(s){
+				RegExMatch(s[A_Index].S,"Os)([\D0]*)(\d{0,9})(.*)",m)
+				If !i:=a["" m1:=m.1,m2:=m.2]
+					if(m1="" && m2=""){
+						r.=s.P
+						Continue
+					}Else
+						i:=a[m1 "",m2]:={P:s.P}
+				ObjInsert(i,{S:m.3})
+			}
+			for m1,_ in a
+				for m2,i in _
+					i.P.=m1 m2,r.=%A_ThisFunc%(i)
+			Return r
+		}Else{
+			o:=[]
+			for i,s in StrSplit(s,d)
+				o[i]:={S:(s d)}
+			Return SubStr(%A_ThisFunc%(o),1,-StrLen(d))
+		}
+	}
+	MsgBox % RobertL_SortN("cd`r`nab")
+*/
+
 if false {
 	funcObj:=Func("invoke").bind("OK")
 	SetTimer, % funcObj, -1
