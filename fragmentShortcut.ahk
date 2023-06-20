@@ -25,6 +25,12 @@ SetTitleMatchMode, 2
 goto fragmentShortcut_End
 ;================auto-execute section end================
 
+#IfWinActive, PDF-XChange Editor ahk_class UIX:Window
+Delete::
+	Send !y	;确认弹出的确认窗口
+	return
+#If
+
 #IfWinActive, ahk_class ApplicationFrameWindow ahk_exe ApplicationFrameHost.exe	;?
 ~Esc::
 	if(A_PriorHotkey=A_ThisHotkey && A_TimeSincePriorHotkey<800)
