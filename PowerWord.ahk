@@ -3,9 +3,20 @@
 #Include dataFromToClipboard.ahk
 #Include HotKey_WhenEditInSciTE.ahk
 Menu, Tray, Icon, PowerWord.ico
-;~ CoordMode, Mouse, Screen
-;~ CoordMode, Pixel, Screen
+;全面使用屏幕(Screen)坐标	;{
+	CoordMode, Mouse, Screen
+	;	金山词霸不一定具有焦点。
+	;	默认为："Relative"。
+	CoordMode, Pixel, Screen
+	CoordMode, Caret, Screen
+;}
 SetDefaultMouseSpeed,0
+Window_Attribute:="ahk_class QTool ahk_exe PowerWord.exe"
+;	局限："划译"（划词翻译）与"悬浮窗"都是此窗口特征，但窗口内容不同。
+;		差异：
+;			- "划译"，"Active Window Info - Visible Text - SelectSearchEditWindow"
+;			- "悬浮窗"：.. "MiniAdvertisementWindow"
+
 #If WinActive("ahk_class QWidget ahk_exe PowerWord.exe") and not GetKeyState("Alt","P")	;{
 LAlt::
 RAlt::
@@ -20,7 +31,7 @@ RAlt::
 				SearchIcon(targetImageFile,0,ImageSearch_OutputVarY_lastFound+5)	;search again start from lower side of first one
 			}
 		}
-		Random, r, 1, 10
+		Random, r, 1, 10					
 		X_target:=ImageSearch_OutputVarX_lastFound+r
 		Y_target:=ImageSearch_OutputVarY_lastFound+r
 	}
@@ -43,29 +54,38 @@ RAlt::
 	;}restore
 	return
 #If	;}
-#If WinActive("ahk_class QTool ahk_exe PowerWord.exe") and not GetKeyState("Alt","P")	;{
-LAlt::
+#If WinExist(Window_Attribute) and not GetKeyState("Alt","P")	;{
+~LAlt::
 RAlt::
-	WinGetPos , _WinPos_X, _WinPos_Y, WinPos_Width, WinPos_Height, A
+	WinGetPos , _WinPos_X, _WinPos_Y, WinPos_Width, WinPos_Height, % Window_Attribute
 	;	WinPos_Width, WinPos_Height used in SearchIcon
 	FileAppend, % "Win X:" _WinPos_X ", Y: " _WinPos_Y ", WinPos_Width: " WinPos_Width ", WinPos_Height: " WinPos_Height "`n", *
 	;	didn't use _WinPos_X, _WinPos_Y
 	targetImageFile:="金山词霸 迷你窗口 发音 图标.bmp"
 	if WinPos_Height=96	;collapsed
 		return
-	if not SearchIcon(targetImageFile)	;search first one from left/top
-		return
+	;search first one from left/top
+	Is_Win_Active:=WinActive(Window_Attribute)
+	if(Is_Win_Active && false){	;全面使用屏幕(Screen)坐标
+		CoordMode, Pixel, Relative
+		if not SearchIcon(targetImageFile)
+			return
+	}else{
+		;~ CoordMode, Pixel, Screen
+		if not SearchIcon(targetImageFile,_WinPos_X, _WinPos_Y)	;search first one from left/top
+			return
+	}
 	if(A_ThisHotkey="RAlt")
 	{
-		FileAppend, search right side, *
+		FileAppend, search right side`n, *
 		if not SearchIcon(targetImageFile,ImageSearch_OutputVarX_lastFound+5){	;search again start from right side of first one
-			FileAppend, search bellow, *
+			FileAppend, search bellow`n, *
 			SearchIcon(targetImageFile,0,ImageSearch_OutputVarY_lastFound+5)	;search again start from lower side of first one
 		}
 	}
 	MouseGetPos , MouseX_original, MouseY_original
 	;	The retrieved coordinates are relative to the active window
-	FileAppend % "Mouse Pos: " MouseX_original " " MouseY_original, *
+	FileAppend % "Mouse Pos: " MouseX_original " " MouseY_original "`n", *
 	;~ Sleep 200
 	Random, r, 1, 10
 	X_target:=ImageSearch_OutputVarX_lastFound+r
@@ -77,11 +97,17 @@ RAlt::
 		Y_caret:=A_CaretY+5
 		FileAppend, Caret Pos: %X_caret%   %Y_caret%`n,*
 	}
+	;全面使用屏幕(Screen)坐标
+	;~ if(not Is_Win_Active)
+		;~ CoordMode, Mouse, Screen
 	Click ,%X_target%, %Y_target%
+	;~ if(not Is_Win_Active)	;restore
+		;~ CoordMode, Mouse, Relative
 	if A_CaretX
 		Click ,%X_caret%, %Y_caret%
-	else
-		Send % "{Tab " (A_ThisHotkey="RAlt"?4:5) "}"
+	;~ else
+		;~ Send % "{Tab " (A_ThisHotkey="RAlt"?4:5) "}"
+	;	会移动到错误的焦点，导致窗口折叠
 	Send {End}
 	/* useless
 		ControlFocus, floatingLineEdit, A
@@ -93,7 +119,7 @@ RAlt::
 	*/
 	/* 
 			return
-		#If WinActive("ahk_class QTool ahk_exe PowerWord.exe") 
+		#If WinActive(Window_Attribute) 
 		LAlt up::
 		RAlt up::
 	 */
@@ -114,14 +140,20 @@ SearchIcon(ImageFile, X_offset:=0, Y_offset:=0){
 	local OutputVarX
 	local OutputVarY
 	try
-		;~ ImageSearch, OutputVarX, OutputVarY, _WinPos_X, Y, X+WinPos_Width, Y+WinPos_Height, *2 金山词霸 发音 图标.bmp
-		ImageSearch, OutputVarX, OutputVarY, X_offset, Y_offset, WinPos_Width, WinPos_Height, % "*2 " . ImageFile
+		ImageSearch, OutputVarX, OutputVarY, X_offset, Y_offset, X_offset+WinPos_Width, Y_offset+WinPos_Height, % "*2 " . ImageFile
+		;~ ImageSearch, OutputVarX, OutputVarY, 0, 0, 9999, 9999, % "*2 " . ImageFile
 		;	Coordinates are relative to the active window
-	catch e
-		MsgBox % "Message: " e.Message ", what: " e.what ", Extra: " e.Extra
+	catch e{
+		FileAppend, % "ImageSearch catch e: `n`tMessage: " e.Message ", what: " e.what ", Extra: " e.Extra
+			. "`n`tX_offset: " X_offset ", Y_offset: " Y_offset ", WinPos_Width: " WinPos_Width ", WinPos_Height: " WinPos_Height 
+			.  "`n", *
 		;	nothing important
+		return
+	}
 	if ErrorLevel{	;1 not found, 2 error
-		FileAppend, % ErrorLevel=1?"not found`n":"error", *
+		FileAppend, % (ErrorLevel=1?"not found":"error")
+			. "`n`tX_offset: " X_offset ", Y_offset: " Y_offset ", WinPos_Width: " WinPos_Width ", WinPos_Height: " WinPos_Height
+			. "`n", *
 		return
 	}else{
 		FileAppend, % "found at: " OutputVarX "," OutputVarY "`n", *
@@ -130,19 +162,45 @@ SearchIcon(ImageFile, X_offset:=0, Y_offset:=0){
 	}
 	return true
 }
-#If
-$!+f::
+#If not WinExist(Window_Attribute)	;{
+$+!f::	;"软件设置-热键设置-显示/隐藏悬浮窗"
 	;~ Send ^c
 	contentToSearch:=dataFromToClipboard()
 	Send !+f
-	WinWaitActive ahk_class QTool ahk_exe PowerWord.exe,,0.5
+	WinWaitActive % Window_Attribute,,0.5
 	if ErrorLevel
 		return
 	Send ^a
 	dataFromToClipboard(contentToSearch)
 	Send {Enter}
 	return
-#If
+#If	;}
+#If WinExist(Window_Attribute) and not WinActive(Window_Attribute)	;{
+/*	功能：更新搜索内容。
+*/
+~LButton::
+	if not (A_ThisHotkey==A_PriorHotkey && A_TimeSincePriorHotkey<200)
+		return
+$+!f::	;"软件设置-热键设置-显示/隐藏悬浮窗"
+	contentToSearch:=dataFromToClipboard()
+	WinActivate, % Window_Attribute
+	Send ^a
+	dataFromToClipboard(contentToSearch)
+	Send {Enter}
+	return
+#If	;}
+
+#If WinActive(Window_Attribute)	;{
+~Esc::	;{
+	/*	期望：内容为空时关闭窗口。
+		阻碍："Active Window Info"无法获取正确的内容（进而猜测`ControlGetText`同样如此）。
+		绕行：如下，双击Esc时关闭窗口。
+	*/
+	
+	if(A_PriorHotkey==A_ThisHotkey && A_TimeSincePriorHotkey<600)
+		Send +!f	;"软件设置-热键设置-显示/隐藏悬浮窗"
+	return	;}
+#If	;}
 
 /*
 	22/2/11	rename from "PowerWordReadOut"
