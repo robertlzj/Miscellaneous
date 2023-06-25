@@ -54,7 +54,14 @@ if false {
 }
 
 ^t::
-	ToolTip % A_CaretX
+	Loop, Reg, HKEY_CLASSES_ROOT\Local Settings\MuiCache, R
+	{
+		subItem:=A_LoopRegSubKey
+		;	Local Settings\MuiCache\143\AAF68885
+		break
+	}
+	RegWrite, REG_SZ, % "HKEY_CLASSES_ROOT\" . subItem , @C:\WINDOWS\system32\notepad.exe`,-469, "文本文档(&T)"
+	ToolTip % ErrorLevel
 	return
 
 a:={}
