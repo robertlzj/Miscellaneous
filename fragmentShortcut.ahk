@@ -406,8 +406,14 @@ f1::
 		return
 	}
 	FileAppend, find, *
-	ControlSetText, Edit1, % A_ComputerName="ROBERTPAD"?"C:\Users\rober\Documents\Lua\temp.lua":"G:\My Documents\Lua\Lua\temp.lua"
-	ControlSetText, Edit2, % A_ComputerName="ROBERTPAD"?"C:\Users\rober\Documents\Lua\temp2.lua":"G:\My Documents\Lua\Lua\"
+	Computer_Name_Map_Default_Path_1:={ROBERTPAD:"C:\Users\rober\Documents\Lua\temp.lua"
+		,ROBERTTABLE:"C:\Users\RobertL\Documents\TortoiseGitMerge_1.txt"}
+	Computer_Name_Map_Default_Path_2:={ROBERTPAD:"C:\Users\rober\Documents\Lua\temp2.lua"
+		,ROBERTTABLE:"C:\Users\RobertL\Documents\TortoiseGitMerge_2.txt"}
+	FileAppend, % A_ComputerName, *
+	FileAppend, % Computer_Name_Map_Default_Path_1[A_ComputerName], *
+	ControlSetText, Edit1, % Computer_Name_Map_Default_Path_1[A_ComputerName]
+	ControlSetText, Edit2, % Computer_Name_Map_Default_Path_2[A_ComputerName]
 	ControlFocus, Edit2
 	ControlSend, Edit2, {End}
 	return
