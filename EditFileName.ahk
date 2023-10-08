@@ -17,10 +17,12 @@ F2::
 	;	eg "C:\Users"
 	BaseDirectoryPath:=OutputVar
 	FileAppend Base Directory Path: %BaseDirectoryPath%`n,*
+	
 	ControlGetText, OutputVar,% fileNameEditor,A
 	;	won't contain ".lnk" extension for shortcut
 	FileName:=OutputVar
 	FileAppend File name: %FileName%`n,*
+	
 	Path:=BaseDirectoryPath . "\" . FileName
 	;	this concat can't get path of shortcut, for lack of extension.
 	FileAppend Path: %Path%`n,*
@@ -35,6 +37,7 @@ F2::
 	;	see `SplitPath`
 	FileAppend File name without extension: %FileNameWithoutExt%`n,*
 	FileAppend File extension: %Extension%`n,*
+	
 	if(Extension=="lnk" or FileName~=" - 快捷方式( \(\d\))?$"){
 		;	FileGetShortcut, FileName, target
 		;	;	"FileGetShortcut" based on working directory, not base directory of file selected
@@ -45,8 +48,14 @@ F2::
 		FileAppend Found Pos: %FoundPos%`, Length: %Length%`n,*
 		Send {End}+{Left %Length%}
 		;	select "快捷方式" in "filename.extension - 快捷方式"
+	}else if(FileNameWithoutExt~=" \- (符号|硬)连接( \(\d\))?$"){
+		NeedleRegEx:="P) \- (符号|硬)连接( \(\d\))?$"
+		FoundPos:=RegExMatch(FileNameWithoutExt,NeedleRegEx,Length)
+		Selection_Start_Pos:=FoundPos-1
+		Selection_Length:=Length
+		SendInput  ^{Home}{Right %Selection_Start_Pos%}+{Right %Selection_Length%}
 	}else{
-		NeedleRegEx :="P)·?[^·]+?.{" Length "," Length "}$"
+		NeedleRegEx :="P)(·|\.)?[^·\.]+?.{" Length "," Length "}$"
 		FoundPos:=RegExMatch(FileNameWithoutExt,NeedleRegEx,Length)
 		FileAppend FoundPos: %FoundPos%`, Length: %Length%`n,*
 		if FoundPos=1
@@ -56,8 +65,8 @@ F2::
 			TotalLength:=StrLen(FileNameWithoutExt)
 			SendInput ^{Home}{Right %TotalLength%}
 		}else{
-			SelectionLength:=Length-1
-			SendInput  ^{Home}{Right %FoundPos%}+{Right %SelectionLength%}
+			Selection_Length:=Length-1
+			SendInput  ^{Home}{Right %FoundPos%}+{Right %Selection_Length%}
 		}
 	}
 	return
