@@ -48,8 +48,8 @@ F2::
 		FileAppend Found Pos: %FoundPos%`, Length: %Length%`n,*
 		Send {End}+{Left %Length%}
 		;	select "快捷方式" in "filename.extension - 快捷方式"
-	}else if(FileNameWithoutExt~=" \- (符号|硬)连接( \(\d\))?$"){
-		NeedleRegEx:="P) \- (符号|硬)连接( \(\d\))?$"
+	}else if(FileNameWithoutExt~=" \- (((符号|硬)连接( \(\d\))?)|(副本))$"){
+		NeedleRegEx:="P) \- (((符号|硬)连接( \(\d\))?)|(副本))$"
 		FoundPos:=RegExMatch(FileNameWithoutExt,NeedleRegEx,Length)
 		Selection_Start_Pos:=FoundPos-1
 		Selection_Length:=Length
