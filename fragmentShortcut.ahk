@@ -25,6 +25,35 @@ SetTitleMatchMode, 2
 goto fragmentShortcut_End
 ;================auto-execute section end================
 
+;{ 范围过大，待缩小
+/* 	#IfWinActive, ahk_exe EXCEL.EXE
+	~^v::	;{
+		ControlGetFocus, Control_Class_Instance, A
+		if(not ErrorLevel and (Control_Class_Instance=="Edit1" or Control_Class_Instance=="EDTBX1" )){	;名称框
+			Replace_Clipboard:=RegExReplace(Clipboard,"[+-/]","_")
+			if(Replace_Clipboard!=Clipboard){
+				Original_Clipboard:=ClipboardAll
+				Clipboard:=Replace_Clipboard
+				Send ^a
+				Send ^v
+				Sleep 300
+				Clipboard:=Original_Clipboard
+				Original_Clipboard:=""
+			}
+		}
+		return ;}
+	#If
+ */
+;}
+
+
+
+#IfWinActive, 脚本编辑器 ahk_class #32770 ahk_exe draw.exe
+Esc::
+	Send !{F4}
+	return
+#If
+
 #IfWinActive, PDF-XChange Editor ahk_class UIX:Window
 Delete::
 	Send !y	;确认弹出的确认窗口
@@ -165,7 +194,7 @@ F1::
 	Output:=Format("{:03}", Output)
 	Sleep 200
 	ControlSetText,Edit2,% Output
-	return 
+	return
 #If
 
 #IfWinActive 播放列表 ahk_exe PotPlayerMini64.exe	;{
@@ -187,7 +216,7 @@ F1::
 	;~ ToolTip % A_ThisHotkey
 	return
 #If WinActive("ahk_class CabinetWClass ahk_exe explorer.exe") && ((A_PriorHotkey=="~RButton up" || A_PriorHotkey=="~AppsKey") && A_TimeSincePriorHotkey<800)
-~w::	
+~w::
 	;~ ToolTip % A_ThisHotkey
 	return
 #If WinActive("ahk_class CabinetWClass ahk_exe explorer.exe") && (A_PriorHotkey=="~w" && A_TimeSincePriorHotkey<500)
@@ -218,7 +247,7 @@ F3::^f
 	if(A_PriorHotkey="~Esc" and A_TimeSincePriorHotkey<300)
 		WinClose, A
 	return
-	
+
 #If  WinActive("ahk_exe zbstudio.exe") ;{
 *~F3::	;{
 	ControlGetText, value, Static1, A
@@ -230,7 +259,7 @@ F3::^f
 
 #If  WinActive("ahk_exe zbstudio.exe") && ClassUnderMouse()~="wxWindowNR\d+"	;{
 	;	wxWindowNRx: 每个标签是一个控件
-/* 
+/*
 	user.lua
 		keymap[ID.RENAMEALLINSTANCES] = "Alt-R"
 		keymap[ID.REPLACEALLSELECTIONS] = "Alt-Shift-R"
@@ -261,7 +290,7 @@ Disable_ShiftDown:	;{
 		return
  */
 #If	;}
-	
+
 #IfWinActive ahk_exe Typora.exe	;markdown	;{
 ~^k Up::	;{Hyperlink
 	orig_clipboard:=ClipboardAll
@@ -274,7 +303,7 @@ Disable_ShiftDown:	;{
 	Sleep, 200
 	Clipboard:=orig_clipboard
 	return	;}
-^+k::	;{create anchor insert 
+^+k::	;{create anchor insert
 	selection:=Clipboard()
 	SendInput <a name="%selection%"></a>{Left 4}
 	return	;}
@@ -448,7 +477,7 @@ f1::
 
 #IfWinActive ahk_exe msedge.exe
 ~^t::
-	O_A_TitleMatchMode:=A_TitleMatchMode 
+	O_A_TitleMatchMode:=A_TitleMatchMode
 	SetTitleMatchMode, 1
 	WinWaitActive, 新建标签页  ahk_exe msedge.exe
 	SetTitleMatchMode, % O_A_TitleMatchMode
@@ -465,7 +494,7 @@ f1::
 
 #If WinActive("ahk_class WeChatMainWndForPC ahk_exe WeChat.exe")
 ~RButton::	;{prepare to select delete
-	;~ ToolTip %  A_Cursor 
+	;~ ToolTip %  A_Cursor
 	;double right click:
 	;	A_PriorHotkey="~RButton" and A_TimeSincePriorHotkey<400
 	if(A_Cursor="Unknown"){
@@ -619,7 +648,7 @@ restoreMousePostion:
 		MousePosition_fix_y:=MousePosition_last_y
 	}
 	return
-	
+
 ;{一键发送文件到文件夹
 #Include SelectOrReadSelection.ahk
 #If WinActive("F:\备份\C-Users-RobertL-Pictures-Samsung Gallery Downloads\DCIM\Camera\")
@@ -676,18 +705,18 @@ FileToClipboard1(PathToCopy){
     ; This will hold a DROPFILES struct, the string, and an (extra) null terminator
     ; 0x42 = GMEM_MOVEABLE(0x2) | GMEM_ZEROINIT(0x40)
     hPath := DllCall("GlobalAlloc","uint",0x42,"uint",StrLen(PathToCopy)+22)
-    
+
     ; Lock the moveable memory, retrieving a pointer to it.
     pPath := DllCall("GlobalLock","uint",hPath)
-    
+
     NumPut(20, pPath+0) ; DROPFILES.pFiles = offset of file list
-    
+
     ; Copy the string into moveable memory.
     DllCall("lstrcpy","uint",pPath+20,"str",PathToCopy)
-    
+
     ; Unlock the moveable memory.
     DllCall("GlobalUnlock","uint",hPath)
-    
+
     DllCall("OpenClipboard","uint",0)
     ; Empty the clipboard, otherwise SetClipboardData may fail.
     DllCall("EmptyClipboard")
@@ -783,7 +812,7 @@ $!`::
 		;	group 1
 			FileAppend % A_TickCount ": On`n", *
 			WinBarView:=true
-			Send #+/ 
+			Send #+/
 		}
 		return
 	;~ #If WinBarView
@@ -808,7 +837,7 @@ $!`::
 				;	repeate key after 500ms
 				FileAppend % A_TickCount ": On`n", *
 				WinBarView:=true
-				Send #+/ 
+				Send #+/
 			}
 			return
 		#If WinBarView
@@ -825,7 +854,7 @@ $!`::
 ;}
 
 #IfWinActive inspection ahk_class AutoHotkeyGUI ahk_exe InternalAHK.exe
-;	Object / Variable 
+;	Object / Variable
 Esc::Send !{F4}
 #IfWinActive [Debugging] ahk_class SciTEWindow ahk_exe SciTE.exe
 ~LButton::
@@ -1028,11 +1057,11 @@ RControl::	;{
 	Send ^+u	;read aloud
 	return
 #IfWinActive ahk_exe SLDWORKS.exe
-$d::
+~$d::
 	MouseGetPos,OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
 	;	The retrieved coordinates are relative to the active window
 	if(OutputVarControl~="^AfxMDIFrame"){
-		Send d
+		;~ Send d
 		Sleep 200
 		MouseMove, OutputVarX+20, OutputVarY+20
 		;	Coordinates are relative to the active window
