@@ -248,15 +248,16 @@ class Socket
 		this.AsyncSelect(lEvent)
 		if !this.Bound
 		{
-			if(false){
+			if(true){
 				this.Bound := this.OnMessage.Bind(this)
 				;~ OnMessage(this.WM_SOCKET, this.Bound)
 				OnMessage(this.WM_SOCKET, this.Bound, MaxThreads:=1)
 				;	20220412_1
+			}else{
+				;20220412_3
+				OnMessage(this.WM_SOCKET, this.Bound:=this.OnMessage_Connect.Bind(this), MaxThreads:=5)
+				OnMessage(this.WM_SOCKET, this.OnMessage_Read.Bind(this))
 			}
-			;20220412_3
-			OnMessage(this.WM_SOCKET, this.Bound:=this.OnMessage_Connect.Bind(this), MaxThreads:=5)
-			OnMessage(this.WM_SOCKET, this.OnMessage_Read.Bind(this))
 		}
 	}
 	
