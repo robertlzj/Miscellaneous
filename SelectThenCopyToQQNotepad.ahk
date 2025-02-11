@@ -13,11 +13,24 @@ while(true){
 	OutputDebug, lastActiveWindow is: %lastActiveWindow%.
 }
 return
+
+#IfWinActive QQNotepad
+F1::
+	Enable:=not Enable
+	ToolTip,% "释放后粘贴 " . (Enable?"开":"关")
+	SetTimer,ToolTip_Tip, -1000
+	return
+ToolTip_Tip:
+	ToolTip
+	return
+#If
+
+#If Enable
 ~*LButton::
 	OutputDebug, ~LButton
 	p:=A_TickCount
 	return
-#If GetKeyState("LControl")==1 and not IsHangOut()
+#If GetKeyState("LControl")==1 and not IsHangOut() and Enable
 ~*LButton up::
 	OutputDebug, ~*LButton up with LControl down
 	if(A_TickCount-p<200){	;click
