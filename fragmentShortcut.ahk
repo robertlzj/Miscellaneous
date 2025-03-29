@@ -25,6 +25,26 @@ SetTitleMatchMode, 2
 goto fragmentShortcut_End
 ;================auto-execute section end================
 
+#IfWinActive ahk_exe Siemens.Automation.Portal.exe
+/*
+	+WheelUp::
+		Send {WheelLeft}	;仍是上下滚动
+		return
+*/
++WheelUp::
++WheelDown::
+	;Send {WheelLeft}	;仍是上下滚动
+	WM_HSCROLL := 0x0114
+	ControlGetFocus, control, A
+	Loop, 3
+		PostMessage, % WM_HSCROLL,% A_ThisHotkey=="+WheelDown"?1:0, 0, %control%, A
+	return
+!LButton::
+	if(A_PriorHotkey==A_ThisHotkey and A_TimeSincePriorHotkey<400){
+		Send !{Enter}	;Properties
+	}
+	return
+
 ;{ 范围过大，待缩小
 /* 	#IfWinActive, ahk_exe EXCEL.EXE
 	~^v::	;{
@@ -46,7 +66,29 @@ goto fragmentShortcut_End
  */
 ;}
 
+#IfWinActive ahk_class XLMAIN ahk_exe EXCEL.EXE
+~LButton::
+	WinWaitActive, ahk_class Net UI Tool Window,, 0
+	if ErrorLevel
+		return
+	ControlFocus, RICHEDIT60W1
+	if ErrorLevel
+		return
+	return
+#If
 
+#IfWinActive LayOut ahk_exe LayOut.exe
+~F1 Up::	;功能：开关网格对齐时，同步开关网格显示
+	Send !{F1}
+	return
+~F2::
+	ToolTip,% "对象捕捉" . LayOut_对象捕捉_状态:=LayOut_对象捕捉_状态="开"?"关":"开"
+	SetTimer, RemoveToolTip, -2000
+	return
+RemoveToolTip:
+	ToolTip
+	return
+#If
 
 #IfWinActive, 脚本编辑器 ahk_class #32770 ahk_exe draw.exe
 Esc::
