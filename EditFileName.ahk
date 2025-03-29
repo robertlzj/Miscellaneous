@@ -12,17 +12,18 @@ Length:=0
 Menu, Tray, Icon, EditFileName.ico
 Menu, Tray, Tip, in explorer F2 to switch select section`nin editor F1 reload/F2 exit
 #If WinActive("ahk_exe explorer.exe") and Rename()
+;~ #IfWinActive ahk_exe explorer.exe ahk_class Edit2
 F2::
 	WinGetActiveTitle, OutputVar
 	;	eg "C:\Users"
 	BaseDirectoryPath:=OutputVar
 	FileAppend Base Directory Path: %BaseDirectoryPath%`n,*
-	
+
 	ControlGetText, OutputVar,% fileNameEditor,A
 	;	won't contain ".lnk" extension for shortcut
 	FileName:=OutputVar
 	FileAppend File name: %FileName%`n,*
-	
+
 	Path:=BaseDirectoryPath . "\" . FileName
 	;	this concat can't get path of shortcut, for lack of extension.
 	FileAppend Path: %Path%`n,*
@@ -37,7 +38,7 @@ F2::
 	;	see `SplitPath`
 	FileAppend File name without extension: %FileNameWithoutExt%`n,*
 	FileAppend File extension: %Extension%`n,*
-	
+
 	if(Extension=="lnk" or FileName~=" - 快捷方式( \(\d\))?$"){
 		;	FileGetShortcut, FileName, target
 		;	;	"FileGetShortcut" based on working directory, not base directory of file selected
@@ -92,11 +93,11 @@ Rename(){
 	ControlGetFocus, OutputVar,A
 	global fileNameEditor
 	fileNameEditor:=OutputVar
-	return ErrorLevel=0 and fileNameEditor~="^Edit\d"
+	return ErrorLevel=0 and fileNameEditor~="^Edit2"
 	;	Edit1 may be path in address bar, then Edit2 is file name
 	;		test in explorer on "C:\Users\RobertLin\Documents"
 }
-/* 
+/*
 	#IfWinActive EditFileName.ahk  ahk_class SciTEWindow ahk_exe SciTE.exe
 	F3::Reload
 	F2::ExitApp
