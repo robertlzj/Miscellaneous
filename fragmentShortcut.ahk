@@ -25,7 +25,28 @@ SetTitleMatchMode, 2
 goto fragmentShortcut_End
 ;================auto-execute section end================
 
+~Space & LAlt up::	;窗口系统菜单
+	SendRaw n	;窗口最小化
+	return
+
+#IfWinActive Siemens ahk_exe Siemens.Automation.Portal.exe
+~^c::
+	if(A_ThisHotkey==A_PriorHotkey and A_TimeSincePriorHotkey<1000){
+		ToolTip % Clipboard
+		if(Clipboard~="^"".+""$"){
+			Clipboard:=SubStr(Clipboard,2,-1)
+			ToolTip % Clipboard
+		}
+		SetTimer, RemoveToolTip, -5000
+	}
+	return
+
+#IfWinActive ahk_class LVDChild ahk_exe LabVIEW.exe
+MButton::Send {Ctrl Down}{Shift Down}{LButton down}
+MButton Up::Send {Ctrl up}{Shift up}{LButton up}
+
 #IfWinActive ahk_exe Siemens.Automation.Portal.exe
+;~ #IfWinActive
 /*
 	+WheelUp::
 		Send {WheelLeft}	;仍是上下滚动

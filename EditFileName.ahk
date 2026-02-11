@@ -89,11 +89,18 @@ $^v::
 Abort:
 	FileNameWithoutExt:=Length:=TotalLength:=""
 	return
+/*To debug un-comment here and `ToolTip` in `Rename()`.
+#If
+F3::
+	Rename()
+	return
+*/
 Rename(){
 	ControlGetFocus, OutputVar,A
 	global fileNameEditor
 	fileNameEditor:=OutputVar
-	return ErrorLevel=0 and fileNameEditor~="^Edit2"
+	;~ ToolTip fileNameEditor=%fileNameEditor%
+	return ErrorLevel=0 and fileNameEditor~="^Edit1"
 	;	Edit1 may be path in address bar, then Edit2 is file name
 	;		test in explorer on "C:\Users\RobertLin\Documents"
 }
